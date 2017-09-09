@@ -27,12 +27,17 @@ class UserController extends Controller
     {
         $this->validateRequest($request);
         User::create([
-            'email' => $request->get('email'),
+            'phone' => $request->get('phone'),
+            'name' => $request->get('name'),
+            'gender' => $request->get('gender'),
             'password' => Hash::make($request->get('password'))
         ]);
 
 /*        return $this->success("The user with with id {$user->id} has been created", 201);*/
-        return $this->success("Success", 201);
+        return $this->success([
+            "status" => 1,
+            "messgae"=> "Success"
+            ], 201);
     }
 
     public function show($id)
@@ -84,8 +89,10 @@ class UserController extends Controller
     {
 
         $rules = [
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'phone' => 'required|digits_between:9,11',
+            'password' => 'required|min:6',
+            'name' => 'required',
+            'gender' => 'required|digits_between:0,1'
         ];
 
         $this->validate($request, $rules);
