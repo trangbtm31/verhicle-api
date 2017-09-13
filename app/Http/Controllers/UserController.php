@@ -36,7 +36,7 @@ class UserController extends Controller
 /*        return $this->success("The user with with id {$user->id} has been created", 201);*/
         return $this->success([
             "status" => 1,
-            "messgae"=> "Success"
+            "message"=> "Success"
             ], 201);
     }
 

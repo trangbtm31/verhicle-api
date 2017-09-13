@@ -37,8 +37,8 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @param $password
      * @return bool|mixed
      */
-    public function verify($email, $password){
-        $user = User::where('email', $email)->first();
+    public function verify($phone, $password){
+        $user = User::where('phone', $phone)->first();
         if($user && Hash::check($password, $user->password)){
             return $user->id;
         }
