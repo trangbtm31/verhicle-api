@@ -30,7 +30,10 @@ class UserController extends Controller
         $existPhoneNumber = User::where('phone',$reqPhoneNumber)->first();
 
         if($existPhoneNumber) {
-            return $this->error("This phone number is registered with another account", 404);
+            return $this->error([
+                "status" => 0,
+                "message"=> "This phone number is registered with another account"
+            ], 404);
         }
 
         User::create([
