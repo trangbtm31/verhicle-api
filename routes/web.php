@@ -23,6 +23,6 @@ $app->put('/users/{user_id}', 'UserController@update');
 $app->delete('/users/{user_id}', 'UserController@destroy');
 
 // Request Access Tokens
-$app->post('/oauth/access_token', function() use ($app){
+$app->post('/users/signin', function() use ($app){
     return response()->json($app->make('oauth2-server.authorizer')->issueAccessToken());
 });
