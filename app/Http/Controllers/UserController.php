@@ -40,7 +40,7 @@ class UserController extends Controller
             'phone' => $reqPhoneNumber,
             'name' => $request->get('name'),
             'gender' => $request->get('gender'),
-            'password' => Hash::make($request->get('password')),
+            'password' => $request->get('password'),
             'google_id' => $request->get('google_id'),
             'facebook_id' => $request->get('facebook_id')
         ]);
