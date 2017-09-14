@@ -26,11 +26,20 @@ class UserController extends Controller
     public function register(Request $request)
     {
         $this->validateRequest($request);
+        $reqPhoneNumber = $request->get('phone');
+        $existPhoneNumber = User::where('phone',$reqPhoneNumber)->first();
+
+        if($existPhoneNumber) {
+            return $this->error("This phone number is registered with another account", 404);
+        }
+
         User::create([
-            'phone' => $request->get('phone'),
+            'phone' => $reqPhoneNumber,
             'name' => $request->get('name'),
             'gender' => $request->get('gender'),
-            'password' => Hash::make($request->get('password'))
+            'password' => Hash::make($request->get('password')),
+            'google_id' => $request->get('google_id'),
+            'facebook_id' => $request->get('facebook_id')
         ]);
 
 /*        return $this->success("The user with with id {$user->id} has been created", 201);*/
