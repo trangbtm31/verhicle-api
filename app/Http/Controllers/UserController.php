@@ -52,6 +52,24 @@ class UserController extends Controller
             ], 201);
     }
 
+    public function signin(Request $request) {
+        $isCorrectPhone = User::where("phone", $request->get('phone'))
+            ->where("password", $request->get('password'))
+            ->first();
+        if($isCorrectPhone) {
+            return $this->success([
+                "status" => 1,
+                "message"=> "Success"
+            ], 201);
+        } else {
+            return $this->error([
+                "status" => 0,
+                "message"=> "Invalid phone number or password"
+            ], 404);
+        }
+
+    }
+
     public function show($id)
     {
 

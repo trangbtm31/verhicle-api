@@ -18,11 +18,12 @@ $app->get('/', function () use ($app) {
 // Users
 $app->get('/users/', 'UserController@index');
 $app->post('/users/', 'UserController@register');
+$app->post('/users/signin', 'UserController@signin');
 $app->get('/users/{user_id}', 'UserController@show');
 $app->put('/users/{user_id}', 'UserController@update');
 $app->delete('/users/{user_id}', 'UserController@destroy');
 
 // Request Access Tokens
-$app->post('/users/signin', function() use ($app){
+/*$app->post('/users/signin', function() use ($app){
     return response()->json($app->make('oauth2-server.authorizer')->issueAccessToken());
-});
+});*/
