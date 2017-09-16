@@ -57,13 +57,13 @@ class UserController extends Controller
             ->where("password", $request->get('password'))
             ->first();
         if($isCorrectPhone) {
-            $token_id = str_random(16);
+            $session_id = str_random(30);
             User::where('phone',$request->get('phone'))
-            ->update(['token_id' => $token_id]);
+            ->update(['session_id' => $session_id]);
             return $this->success([
                 "status" => 1,
                 "message" => "Success",
-                "token_id" => $token_id
+                "session_id" => $session_id
             ], 201);
         } else {
             return $this->error([
