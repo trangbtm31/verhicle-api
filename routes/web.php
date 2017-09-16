@@ -16,12 +16,19 @@ $app->get('/', function () use ($app) {
 });
 
 // Users
-$app->get('/users/', 'UserController@index');
-$app->post('/users/', 'UserController@register');
-$app->post('/users/signin', 'UserController@signin');
-$app->get('/users/{user_id}', 'UserController@show');
-$app->put('/users/{user_id}', 'UserController@update');
-$app->delete('/users/{user_id}', 'UserController@destroy');
+$app->group(['prefix' => 'users'], function () use($app) {
+    $app->get('/', 'UserController@index');
+    $app->post('/', 'UserController@register');
+    $app->post('/signin', 'UserController@signin');
+    $app->get('/{user_id}', 'UserController@show');
+    $app->put('/{user_id}', 'UserController@update');
+    $app->delete('/{user_id}', 'UserController@destroy');
+});
+
+// Access Token
+$app->group(['prefix' => 'api', 'middleware' => 'auth:api'], function () use($app) {
+    $app->post('/request/needers', 'RequestController@getRequestFromNeeders');
+});
 
 // Request Access Tokens
 /*$app->post('/users/signin', function() use ($app){

@@ -29,7 +29,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $hidden = [
-        'created_at', 'updated_at',
+        'created_at', 'updated_at', 'delete_at', 'password','api_token'
     ];
 
     /**
@@ -37,9 +37,9 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @param $password
      * @return bool|mixed
      */
-    public function verify($phone, $password){
+    static function verify($phone, $password){
         $user = User::where('phone', $phone)->first();
-        if($user && Hash::check($password, $user->password)){
+        if($user && $password == $user->password){
             return $user->id;
         }
         return false;

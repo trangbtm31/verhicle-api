@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\User;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -47,23 +46,19 @@ class UserController extends Controller
 
 /*        return $this->success("The user with with id {$user->id} has been created", 201);*/
         return $this->success([
-            "status" => 1,
             "message"=> "Success"
             ], 201);
     }
 
     public function signin(Request $request) {
-        $isCorrectPhone = User::where("phone", $request->get('phone'))
-            ->where("password", $request->get('password'))
-            ->first();
-        if($isCorrectPhone) {
-            $session_id = str_random(30);
+        $userId = User::verify($request->get('phone'), $request->get('password'));
+        if($userId) {
+            $api_token = str_random(30);
             User::where('phone',$request->get('phone'))
-            ->update(['session_id' => $session_id]);
+            ->update(['api_token' => $api_token]);
             return $this->success([
-                "status" => 1,
                 "message" => "Success",
-                "session_id" => $session_id
+                "api_token" => $api_token
             ], 201);
         } else {
             return $this->error([
