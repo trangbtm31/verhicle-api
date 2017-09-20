@@ -1,0 +1,42 @@
+version: '2'
+
+services:
+    nginx:
+        image: nginx:latest
+        ports:
+            - "8081:80"
+        volumes:
+            - ./:/var/www/html/verhicle
+            - ./nginx/conf.d:/etc/nginx/conf.d
+            - ./nginx/logs:/var/log/nginx
+        links:
+            - php7-fpm:9000
+        depends_on:
+            - php7-fpm
+        
+    php7-fpm:
+        image: php:7.0-fpm
+        volumes:
+            - ./:/var/www/html/verhicle
+        links:
+            - mysql
+        depends_on:
+            - mysql
+
+    mysql:
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: verhicle
+            MYSQL_ROOT_PASSWORD: verhicle123
+            MYSQL_USER: verhicle
+            MYSQL_PASSWORD: verhicle123
+
+    adminer:
+        image: adminer:latest
+        ports:
+            - 8082:8080
+        environment:
+            ADMINER_DESIGN: 'pepa-linha'
+            ADMINER_PLUGINS: 'tables-filter tinymce'
+        depends_on:
+            - mysql
