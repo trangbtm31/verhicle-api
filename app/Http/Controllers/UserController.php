@@ -51,14 +51,26 @@ class UserController extends Controller
     }
 
     public function signin(Request $request) {
-        $userId = User::verify($request->get('phone'), $request->get('password'));
-        if($userId) {
+        $user = User::verify($request->get('phone'), $request->get('password'));
+        if($user) {
             $api_token = str_random(30);
             User::where('phone',$request->get('phone'))
             ->update(['api_token' => $api_token]);
+            $userInfo = User::where('phone',$request->get('phone'))->first();
             return $this->success([
                 "message" => "Success",
-                "api_token" => $api_token
+                "api_token" => $api_token,
+                "user_info" => [
+                    "id" => $userInfo->id,
+                    "name" => $userInfo->name,
+                    "phone" => $userInfo->phone,
+                    "email" => $userInfo->email,
+                    "avatar_link" => $userInfo->avatar_link,
+                    "gender" => $userInfo->gender,
+                    "address" => $userInfo->address,
+                    "birthday" => $userInfo->birthday
+                ]
+
             ], 201);
         } else {
             return $this->error([
