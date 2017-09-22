@@ -32,7 +32,7 @@ class UserController extends Controller
             return $this->error([
                 "status" => 0,
                 "message"=> "This phone number is registered with another account"
-            ], 404);
+            ], 200);
         }
 
         User::create([
@@ -47,7 +47,7 @@ class UserController extends Controller
 /*        return $this->success("The user with with id {$user->id} has been created", 201);*/
         return $this->success([
             "message"=> "Success"
-            ], 201);
+            ], 200);
     }
 
     public function signin(Request $request) {
@@ -71,12 +71,12 @@ class UserController extends Controller
                     "birthday" => $userInfo->birthday
                 ]
 
-            ], 201);
+            ], 200);
         } else {
             return $this->error([
                 "status" => 0,
                 "message"=> "Invalid phone number or password"
-            ], 404);
+            ], 200);
         }
 
     }
