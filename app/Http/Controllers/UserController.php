@@ -9,142 +9,143 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
 
-    /*public function __construct()
-    {
-        $this->middleware('Authorize:' . __CLASS__, ['except' => ['index', 'show']]);
-        $this->middleware('oauth', ['except' => ['index', 'show']]);
-    }*/
+	/*public function __construct()
+	{
+		$this->middleware('Authorize:' . __CLASS__, ['except' => ['index', 'show']]);
+		$this->middleware('oauth', ['except' => ['index', 'show']]);
+	}*/
 
-    public function index()
-    {
+	public function index()
+	{
 
-        $users = User::all();
-        return $this->success($users, 200);
-    }
+		$users = User::all();
 
-    public function register(Request $request)
-    {
-        $this->validateRequest($request);
-        $reqPhoneNumber = $request->get('phone');
-        $existPhoneNumber = User::where('phone',$reqPhoneNumber)->first();
+		return $this->success($users, 200);
+	}
 
-        if($existPhoneNumber) {
-            return $this->error([
-                "status" => 0,
-                "message"=> "This phone number is registered with another account"
-            ], 200);
-        }
+	public function register(Request $request)
+	{
+		$this->validateRequest($request);
+		$reqPhoneNumber = $request->get('phone');
+		$existPhoneNumber = User::where('phone', $reqPhoneNumber)->first();
 
-        User::create([
-            'phone' => $reqPhoneNumber,
-            'name' => $request->get('name'),
-            'gender' => $request->get('gender'),
-            'password' => $request->get('password'),
-            'google_id' => $request->get('google_id'),
-            'facebook_id' => $request->get('facebook_id')
-        ]);
+		if ($existPhoneNumber) {
+			return $this->error(1, "This phone number is registered with another account", 200);
+		}
 
-/*        return $this->success("The user with with id {$user->id} has been created", 201);*/
-        return $this->success([
-            "message"=> "Success"
-            ], 200);
-    }
+		User::create(
+			[
+				'phone' => $reqPhoneNumber,
+				'name' => $request->get('name'),
+				'gender' => $request->get('gender'),
+				'password' => $request->get('password'),
+				'google_id' => $request->get('google_id'),
+				'facebook_id' => $request->get('facebook_id'),
+			]
+		);
 
-    public function signin(Request $request) {
-        $user = User::verify($request->get('phone'), $request->get('password'));
-        if($user) {
-            $api_token = str_random(30);
-            User::where('phone',$request->get('phone'))
-            ->update(['api_token' => $api_token]);
-            $userInfo = User::where('phone',$request->get('phone'))->first();
-            return $this->success([
-                "message" => "Success",
-                "api_token" => $api_token,
-                "user_info" => [
-                    "id" => $userInfo->id,
-                    "name" => $userInfo->name,
-                    "phone" => $userInfo->phone,
-                    "email" => $userInfo->email,
-                    "avatar_link" => $userInfo->avatar_link,
-                    "gender" => $userInfo->gender,
-                    "address" => $userInfo->address,
-                    "birthday" => $userInfo->birthday
-                ]
+		/*        return $this->success("The user with with id {$user->id} has been created", 201);*/
 
-            ], 200);
-        } else {
-            return $this->error([
-                "status" => 0,
-                "message"=> "Invalid phone number or password"
-            ], 200);
-        }
+		return $this->success('', 200);
+	}
 
-    }
+	public function signin(Request $request)
+	{
+		$user = User::verify($request->get('phone'), $request->get('password'));
+		if ($user) {
+			$api_token = str_random(30);
+			User::where('phone', $request->get('phone'))
+				->update(['api_token' => $api_token]);
+			$userInfo = User::where('phone', $request->get('phone'))->first();
 
-    public function show($id)
-    {
+			return $this->success(
+				[
+					"api_token" => $api_token,
+					"user_info" => [
+						"id" => $userInfo->id,
+						"name" => $userInfo->name,
+						"phone" => $userInfo->phone,
+						"email" => $userInfo->email,
+						"avatar_link" => $userInfo->avatar_link,
+						"gender" => $userInfo->gender,
+						"address" => $userInfo->address,
+						"birthday" => $userInfo->birthday,
+					],
 
-        $user = User::find($id);
+				],
+				200
+			);
+		} else {
+			return $this->error(1, "Invalid phone number or password", 200);
+		}
 
-        if (!$user) {
-            return $this->error("The user with {$id} doesn't exist", 404);
-        }
+	}
 
-        return $this->success($user, 200);
-    }
+	public function show($id)
+	{
 
-    public function update(Request $request, $id)
-    {
+		$user = User::find($id);
 
-        $user = User::find($id);
+		if (!$user) {
+			return $this->error("The user with {$id} doesn't exist", 404);
+		}
 
-        if (!$user) {
-            return $this->error("The user with {$id} doesn't exist", 200);
-        }
+		return $this->success($user, 200);
+	}
 
-        $this->validateRequest($request);
+	public function update(Request $request, $id)
+	{
 
-        $user->email = $request->get('email');
-        $user->password = Hash::make($request->get('password'));
+		$user = User::find($id);
 
-        $user->save();
+		if (!$user) {
+			return $this->error("The user with {$id} doesn't exist", 200);
+		}
 
-        return $this->success("The user with with id {$user->id} has been updated", 200);
-    }
+		$this->validateRequest($request);
 
-    public function destroy($id)
-    {
+		$user->email = $request->get('email');
+		$user->password = Hash::make($request->get('password'));
 
-        $user = User::find($id);
+		$user->save();
 
-        if (!$user) {
-            return $this->error("The user with {$id} doesn't exist", 200);
-        }
+		return $this->success("The user with with id {$user->id} has been updated", 200);
+	}
 
-        $user->delete();
+	public function destroy($id)
+	{
 
-        return $this->success("The user with with id {$id} has been deleted", 200);
-    }
+		$user = User::find($id);
 
-    public function validateRequest(Request $request)
-    {
+		if (!$user) {
+			return $this->error("The user with {$id} doesn't exist", 200);
+		}
 
-        $rules = [
-            'phone' => 'required|digits_between:9,11',
-            'password' => 'required|min:6',
-            'name' => 'required',
-            'gender' => 'required|digits_between:0,1'
-        ];
+		$user->delete();
 
-        $this->validate($request, $rules);
-    }
+		return $this->success("The user with with id {$id} has been deleted", 200);
+	}
 
-    public function isAuthorized(Request $request)
-    {
+	public function validateRequest(Request $request)
+	{
 
-        $resource = "users";
-        // $user     = User::find($this->getArgs($request)["user_id"]);
+		$rules = [
+			'phone' => 'required|digits_between:9,11',
+			'password' => 'required|min:6',
+			'name' => 'required',
+			'gender' => 'required|digits_between:0,1',
+		];
 
-        return $this->authorizeUser($request, $resource); 
-    }
+		$this->validate($request, $rules);
+	}
+
+	public function isAuthorized(Request $request)
+	{
+
+		$resource = "users";
+
+		// $user     = User::find($this->getArgs($request)["user_id"]);
+
+		return $this->authorizeUser($request, $resource);
+	}
 }
