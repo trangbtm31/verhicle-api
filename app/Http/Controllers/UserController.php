@@ -145,6 +145,6 @@ class UserController extends Controller
         $resource = "users";
         // $user     = User::find($this->getArgs($request)["user_id"]);
 
-        return $this->authorizeUser($request, $resource);
+        return $this->authorizeUser($request, $resource); 
     }
 }
