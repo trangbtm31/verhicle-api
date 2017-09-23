@@ -99,7 +99,7 @@ class UserController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-            return $this->error("The user with {$id} doesn't exist", 404);
+            return $this->error("The user with {$id} doesn't exist", 200);
         }
 
         $this->validateRequest($request);
@@ -118,7 +118,7 @@ class UserController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-            return $this->error("The user with {$id} doesn't exist", 404);
+            return $this->error("The user with {$id} doesn't exist", 200);
         }
 
         $user->delete();
