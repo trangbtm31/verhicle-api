@@ -23,7 +23,7 @@ class RequestController extends Controller
 	}
 
 	public function getRequestFromNeeders(Request $request) {
-		$aa= RequestFromNeeders::create([
+		 RequestFromNeeders::create([
 			'user_id' => $this->userId,
 			'source_location' => $request->get('source_location'),
 			'destination_location' => $request->get('destination_location'),
