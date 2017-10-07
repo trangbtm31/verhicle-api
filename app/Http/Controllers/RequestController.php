@@ -22,18 +22,31 @@ class RequestController extends Controller
 		$this->userId = $request->get('user_id');
 	}
 
-	public function getRequestFromNeeders(Request $request) {
-		 RequestFromNeeders::create([
-			'user_id' => $this->userId,
-			'source_location' => $request->get('source_location'),
-			'destination_location' => $request->get('destination_location'),
-			'time_start' => $request->get('time_start'),
-			'date_start' => $request->get('date_start'),
-			'device_id' => $request->get('device_id')
-		]);
+	public function getRequest(Request $request)
+	{
+		RequestFromNeeders::create(
+			[
+				'user_id' => $this->userId,
+				'source_location' => $request->get('source_location'),
+				'destination_location' => $request->get('destination_location'),
+				'time_start' => $request->get('time_start'),
+				'date_start' => $request->get('date_start'),
+				'vehicle_type' => $request->get('vehicle_type'),
+				'device_id' => $request->get('device_id'),
+			]
+		);
+		if($request->get('vehicle_type') == 0){
+			$hasVehicle = RequestFromNeeders::join('Users', 'request_from_needers.users_id', '=', 'users.id')
+				->select('users.id', '', '')
+				->where('vehicle_type', '=!', 0)->get();
+			return $this->success([
+				"user_vehicle_list" => $hasVehicle
+			],
+				200);
+		}
+		else {
+			return $this->success('', 200);
+		}
 
-		return $this->success([
-			"message"=> "Success"
-		], 201);
 	}
 }
