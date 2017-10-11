@@ -30,7 +30,6 @@ class RequestController extends Controller
 				'source_location' => $request->get('source_location'),
 				'destination_location' => $request->get('destination_location'),
 				'time_start' => $request->get('time_start'),
-				'date_start' => $request->get('date_start'),
 				'vehicle_type' => $request->get('vehicle_type'),
 				'device_id' => $request->get('device_id'),
 			]

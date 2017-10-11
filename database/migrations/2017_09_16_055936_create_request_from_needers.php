@@ -21,7 +21,6 @@ class CreateRequestFromNeeders extends Migration
         $table->string('source_location');
         $table->string('destination_location');
         $table->time('time_start');
-        $table->date('date_start');
         $table->integer('vehicle_type');
         $table->string('device_id');
         $table->date('delete_at')->nullable();
