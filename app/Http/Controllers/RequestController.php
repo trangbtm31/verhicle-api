@@ -59,8 +59,8 @@ class RequestController extends Controller
                     ],
                     "request_info" => [
                         "vehicle_type" => $activeUser->vehicle_type,
-                        "source_location" => $activeUser->source_location,
-                        "dest_location" => $activeUser->destination_location,
+                        "source_location" => json_decode($activeUser->source_location),
+                        "dest_location" => json_decode($activeUser->destination_location),
                         "time_start" => $activeUser->time_start,
                     ]
             ]);
