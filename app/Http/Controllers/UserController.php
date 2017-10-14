@@ -46,7 +46,7 @@ class UserController extends Controller
 
 		/*        return $this->success("The user with with id {$user->id} has been created", 201);*/
 
-		return $this->success('', 200);
+		return $this->success("data", '', 200);
 	}
 
 	public function signin(Request $request)
@@ -58,7 +58,7 @@ class UserController extends Controller
 				->update(['api_token' => $api_token]);
 			$userInfo = User::where('phone', $request->get('phone'))->first();
 
-			return $this->success(
+			return $this->success("data",
 				[
 					"api_token" => $api_token,
 					"user_info" => [

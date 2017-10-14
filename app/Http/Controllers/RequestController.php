@@ -45,7 +45,7 @@ class RequestController extends Controller
 			]
 		);
         $activeUsers = $this->getActiveUser($vehicleType);
-        foreach(json_decode($activeUsers) as $activeUser) {
+        foreach($activeUsers as $activeUser) {
             array_push($result, [
                     "user_info" => [
                         "id" => $activeUser->id,
@@ -66,9 +66,9 @@ class RequestController extends Controller
             ]);
         }
 
-        return $this->success([
-            "active_users" => $result,
-            ],
+        return $this->success(
+			"active_users",
+			$result,
             200
         );
 
@@ -115,6 +115,6 @@ class RequestController extends Controller
                 )
                 ->where('request_from_needers.vehicle_type', '=', '0')->get();
         }
-        return $activeUser;
+        return json_decode($activeUser);
     }
 }
