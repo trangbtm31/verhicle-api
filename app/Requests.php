@@ -11,7 +11,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 
-class RequestFromNeeders extends Model
+class Requests extends Model
 {
 	protected $fillable = ['id', 'user_id', 'source_location', 'destination_location', 'start_time', 'vehicle_type'];
 

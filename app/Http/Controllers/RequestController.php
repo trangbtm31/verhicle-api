@@ -9,7 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
-use App\RequestFromNeeders;
+use App\Requests;
 use Illuminate\Http\Request;
 
 
@@ -34,7 +34,7 @@ class RequestController extends Controller
 	{
 	    $vehicleType = $request->get('vehicle_type');
 	    $result = array();
-		RequestFromNeeders::create(
+		Requests::create(
 			[
 				'user_id' => $this->userId,
 				'source_location' => $request->get('source_location'),
@@ -79,7 +79,7 @@ class RequestController extends Controller
      */
 	private function getActiveUser($vehicleType) {
 	    if($vehicleType == 0) {
-            $activeUser = RequestFromNeeders::join('users', 'request_from_needers.user_id', '=', 'users.id')
+            $activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
                 ->select(
                     'users.id',
                     'users.phone',
@@ -89,15 +89,15 @@ class RequestController extends Controller
                     'users.gender',
                     'users.birthday',
                     'users.avatar_link',
-                    'request_from_needers.vehicle_type',
-                    'request_from_needers.source_location',
-                    'request_from_needers.destination_location',
-                    'request_from_needers.time_start'
+                    'requests.vehicle_type',
+                    'requests.source_location',
+                    'requests.destination_location',
+                    'requests.time_start'
 
                 )
-                ->where('request_from_needers.vehicle_type', '!=', '0')->get();
+                ->where('requests.vehicle_type', '!=', '0')->get();
         } else {
-            $activeUser = RequestFromNeeders::join('users', 'request_from_needers.user_id', '=', 'users.id')
+            $activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
                 ->select(
                     'users.id',
                     'users.phone',
@@ -107,13 +107,13 @@ class RequestController extends Controller
                     'users.gender',
                     'users.birthday',
                     'users.avatar_link',
-                    'request_from_needers.vehicle_type',
-                    'request_from_needers.source_location',
-                    'request_from_needers.destination_location',
-                    'request_from_needers.time_start'
+                    'requests.vehicle_type',
+                    'requests.source_location',
+                    'requests.destination_location',
+                    'requests.time_start'
 
                 )
-                ->where('request_from_needers.vehicle_type', '=', '0')->get();
+                ->where('requests.vehicle_type', '=', '0')->get();
         }
         return json_decode($activeUser);
     }
