@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Requests extends Model
 {
-	protected $fillable = ['id', 'user_id', 'source_location', 'destination_location', 'start_time', 'vehicle_type'];
+	protected $fillable = ['id', 'user_id', 'source_location', 'destination_location', 'time_start', 'vehicle_type'];
 
 	protected $hidden = ['created_at', 'updated_at', 'delete_at'];
 

@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\User;
 use App\Requests;
 use Illuminate\Http\Request;
@@ -34,12 +35,14 @@ class RequestController extends Controller
 	{
 	    $vehicleType = $request->get('vehicle_type');
 	    $result = array();
+        $timeStart = date("h:i", strtotime( $request->get('time_start')));
+
 		Requests::create(
 			[
 				'user_id' => $this->userId,
 				'source_location' => $request->get('source_location'),
 				'destination_location' => $request->get('destination_location'),
-				'time_start' => $request->get('time_start'),
+				'time_start' => $timeStart,
 				'vehicle_type' => $vehicleType,
 				'device_id' => $request->get('device_id'),
 			]
