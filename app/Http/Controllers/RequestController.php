@@ -8,9 +8,9 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
 use App\User;
 use App\Requests;
+use App\FCMService;
 use Illuminate\Http\Request;
 
 
@@ -37,87 +37,105 @@ class RequestController extends Controller
 	    $result = array();
         $timeStart = date("h:i", strtotime( $request->get('time_start')));
 
+		$vehicleType = $request->get('vehicle_type');
+		$userId = $this->userId;
+		$fcmToken = $request->get('fcm_token');
+		$result = array();
 		Requests::create(
 			[
-				'user_id' => $this->userId,
+				'user_id' => $userId,
 				'source_location' => $request->get('source_location'),
 				'destination_location' => $request->get('destination_location'),
-				'time_start' => $timeStart,
+				'time_start' => $request->get('time_start'),
 				'vehicle_type' => $vehicleType,
 				'device_id' => $request->get('device_id'),
 			]
 		);
-        $activeUsers = $this->getActiveUser($vehicleType);
-        foreach($activeUsers as $activeUser) {
-            array_push($result, [
-                    "user_info" => [
-                        "id" => $activeUser->id,
-                        "phone" => $activeUser->phone,
-                        "email" => $activeUser->email,
-                        "name" => $activeUser->name,
-                        "address" => $activeUser->address,
-                        "gender" => $activeUser->gender,
-                        "birthday" => $activeUser->birthday,
-                        "avatar_link" => $activeUser->avatar_link
-                    ],
-                    "request_info" => [
-                        "vehicle_type" => $activeUser->vehicle_type,
-                        "source_location" => json_decode($activeUser->source_location),
-                        "dest_location" => json_decode($activeUser->destination_location),
-                        "time_start" => $activeUser->time_start,
-                    ]
-            ]);
-        }
+		$isExistToken = FCMService::where('token', '=', $fcmToken)->first();
+		if (!$isExistToken) {
+			FCMService::create(
+				[
+					'user_id' => $userId,
+					'token' => $fcmToken,
+				]
+			);
+		}
+		$activeUsers = $this->getActiveUser($vehicleType);
+		foreach ($activeUsers as $activeUser) {
+			array_push(
+				$result,
+				[
+					"user_info" => [
+						"id" => $activeUser->id,
+						"phone" => $activeUser->phone,
+						"email" => $activeUser->email,
+						"name" => $activeUser->name,
+						"address" => $activeUser->address,
+						"gender" => $activeUser->gender,
+						"birthday" => $activeUser->birthday,
+						"avatar_link" => $activeUser->avatar_link,
+					],
+					"request_info" => [
+						"vehicle_type" => $activeUser->vehicle_type,
+						"source_location" => json_decode($activeUser->source_location),
+						"dest_location" => json_decode($activeUser->destination_location),
+						"time_start" => $activeUser->time_start,
+					],
+				]
+			);
+		}
 
-        return $this->success(
+		return $this->success(
 			"active_users",
 			$result,
-            200
-        );
+			200
+		);
 
 	}
 
-    /**
-     * @param $vehicleType
-     */
-	private function getActiveUser($vehicleType) {
-	    if($vehicleType == 0) {
-            $activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
-                ->select(
-                    'users.id',
-                    'users.phone',
-                    'users.email',
-                    'users.name',
-                    'users.address',
-                    'users.gender',
-                    'users.birthday',
-                    'users.avatar_link',
-                    'requests.vehicle_type',
-                    'requests.source_location',
-                    'requests.destination_location',
-                    'requests.time_start'
+	/**
+	 * @param $vehicleType
+	 */
+	private function getActiveUser($vehicleType)
+	{
+		if ($vehicleType == 0) {
+			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
+				->select(
+					'users.id',
+					'users.phone',
+					'users.email',
+					'users.name',
+					'users.address',
+					'users.gender',
+					'users.birthday',
+					'users.avatar_link',
+					'requests.vehicle_type',
+					'requests.source_location',
+					'requests.destination_location',
+					'requests.time_start'
 
-                )
-                ->where('requests.vehicle_type', '!=', '0')->get();
-        } else {
-            $activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
-                ->select(
-                    'users.id',
-                    'users.phone',
-                    'users.email',
-                    'users.name',
-                    'users.address',
-                    'users.gender',
-                    'users.birthday',
-                    'users.avatar_link',
-                    'requests.vehicle_type',
-                    'requests.source_location',
-                    'requests.destination_location',
-                    'requests.time_start'
+				)
+				->where('requests.vehicle_type', '!=', '0')->get();
+		} else {
+			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
+				->select(
+					'users.id',
+					'users.phone',
+					'users.email',
+					'users.name',
+					'users.address',
+					'users.gender',
+					'users.birthday',
+					'users.avatar_link',
+					'requests.vehicle_type',
+					'requests.source_location',
+					'requests.destination_location',
+					'requests.time_start'
 
-                )
-                ->where('requests.vehicle_type', '=', '0')->get();
-        }
-        return json_decode($activeUser);
-    }
+				)
+				->where('requests.vehicle_type', '=', '0')->get();
+		}
+
+		return json_decode($activeUser);
+	}
 }

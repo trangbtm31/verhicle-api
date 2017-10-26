@@ -46,7 +46,7 @@ class UserController extends Controller
 
 		/*        return $this->success("The user with with id {$user->id} has been created", 201);*/
 
-		return $this->success("data", '', 200);
+		return $this->success('', '', 200);
 	}
 
 	public function signin(Request $request)
@@ -79,6 +79,22 @@ class UserController extends Controller
 			return $this->error(1, "Invalid phone number or password", 200);
 		}
 
+	}
+
+	public function signOut(Request $request) {
+		$user = User::find($request->user_id);
+
+		if(!$user || $user->api_token != $request->api_token) {
+			return $this->error(0 ,"You haven't log in", 200);
+		}
+
+		$user->api_token = '';
+
+		$user->save();
+
+		return $this->success(
+			'','',200
+		);
 	}
 
 	public function show($id)
