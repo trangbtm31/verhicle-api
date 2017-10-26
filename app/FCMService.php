@@ -11,7 +11,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 
-class FCM extends Model
+class FCMService extends Model
 {
 	protected $fillable = ['id', 'user_id', 'token'];
 

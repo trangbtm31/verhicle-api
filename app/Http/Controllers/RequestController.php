@@ -47,7 +47,7 @@ class RequestController extends Controller
 				'device_id' => $request->get('device_id'),
 			]
 		);
-		$isExistToken = FCMService::where('token', '=', $fcmToken)->first();
+		/*$isExistToken = FCMService::where('token', '=', $fcmToken)->first();
 		if (!$isExistToken) {
 			FCMService::create(
 				[
@@ -55,7 +55,7 @@ class RequestController extends Controller
 					'token' => $fcmToken,
 				]
 			);
-		}
+		}*/
 		$activeUsers = $this->getActiveUser($vehicleType);
 		foreach ($activeUsers as $activeUser) {
 			array_push(

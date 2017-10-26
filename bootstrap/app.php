@@ -59,9 +59,9 @@ $app->singleton(
 | route or middleware that'll be assigned to some specific routes.
 |
 */
-$app->middleware([
+/*$app->middleware([
     \LucaDegasperi\OAuth2Server\Middleware\OAuthExceptionHandlerMiddleware::class
-]);
+]);*/
 /*$app->routeMiddleware([
     'oauth' =>
         \LucaDegasperi\OAuth2Server\Middleware\OAuthMiddleware::class,
