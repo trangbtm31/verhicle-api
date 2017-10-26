@@ -18,21 +18,25 @@ class RequestController extends Controller
 {
 	protected $userId;
 
-	/**
-	 * RequestController constructor.
-	 * @param Request $request
-	 */
+    /**
+     * RequestController constructor.
+     * @param Request $request
+     */
 	public function __construct(Request $request)
 	{
 		$this->userId = $request->get('user_id');
 	}
 
-	/**
-	 * @param Request $request
-	 * @return \Illuminate\Http\JsonResponse
-	 */
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 	public function getRequest(Request $request)
 	{
+	    $vehicleType = $request->get('vehicle_type');
+	    $result = array();
+        $timeStart = date("h:i", strtotime( $request->get('time_start')));
+
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $this->userId;
 		$fcmToken = $request->get('fcm_token');
