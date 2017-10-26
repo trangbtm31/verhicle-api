@@ -33,20 +33,18 @@ class RequestController extends Controller
      */
 	public function getRequest(Request $request)
 	{
-	    $vehicleType = $request->get('vehicle_type');
-	    $result = array();
         $timeStart = date("h:i", strtotime( $request->get('time_start')));
 
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $this->userId;
-		$fcmToken = $request->get('fcm_token');
+		//$fcmToken = $request->get('fcm_token');
 		$result = array();
 		Requests::create(
 			[
 				'user_id' => $userId,
 				'source_location' => $request->get('source_location'),
 				'destination_location' => $request->get('destination_location'),
-				'time_start' => $request->get('time_start'),
+				'time_start' => $timeStart,
 				'vehicle_type' => $vehicleType,
 				'device_id' => $request->get('device_id'),
 			]
@@ -60,7 +58,7 @@ class RequestController extends Controller
 				]
 			);
 		}*/
-		$activeUsers = $this->getActiveUser($vehicleType);
+		$activeUsers = $this->getActiveUser($vehicleType, $userId);
 		foreach ($activeUsers as $activeUser) {
 			array_push(
 				$result,
@@ -96,7 +94,7 @@ class RequestController extends Controller
 	/**
 	 * @param $vehicleType
 	 */
-	private function getActiveUser($vehicleType)
+	private function getActiveUser($vehicleType, $userId)
 	{
 		if ($vehicleType == 0) {
 			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
@@ -115,7 +113,7 @@ class RequestController extends Controller
 					'requests.time_start'
 
 				)
-				->where('requests.vehicle_type', '!=', '0')->get();
+				->where('requests.vehicle_type', '!=', '0')->where('users.id', '!=', $userId)->get();
 		} else {
 			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
 				->select(
