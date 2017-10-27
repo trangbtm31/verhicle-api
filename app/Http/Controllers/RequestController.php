@@ -10,7 +10,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Requests;
-use App\FCMService;
+//use App\FCMService;
 use Illuminate\Http\Request;
 
 
@@ -40,9 +40,9 @@ class RequestController extends Controller
 		//$fcmToken = $request->get('fcm_token');
 		$result = array();
 		$isExistRequest = Requests::where('user_id', '=', $userId)->where('delete_at', '!=', NULL)->first();
-		if(!empty($isExistRequest)) {
+		if(empty($isExistRequest)) {
 		    return $this->error(
-                1, "Transaction not yet completed", 200
+                1, "Transaction is not yet completed", 200
             );
         }
 		Requests::create(
@@ -88,7 +88,6 @@ class RequestController extends Controller
 				]
 			);
 		}
-
 		return $this->success(
 			"active_users",
 			$result,
@@ -119,7 +118,7 @@ class RequestController extends Controller
 					'requests.time_start'
 
 				)
-				->where('requests.vehicle_type', '!=', '0')->where('users.id', '!=', $userId)->get();
+				->where('requests.vehicle_type', '!=', '0')->where('requests.user_id', '!=', $userId)->get();
 		} else {
 			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
 				->select(
@@ -137,7 +136,7 @@ class RequestController extends Controller
 					'requests.time_start'
 
 				)
-				->where('requests.vehicle_type', '=', '0')->where('users.id', '!=', $userId)->get();
+				->where('requests.vehicle_type', '=', '0')->where('requests.user_id', '!=', $userId)->get();
 		}
 
 		return json_decode($activeUser);
