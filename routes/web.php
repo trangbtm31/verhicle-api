@@ -28,8 +28,12 @@ $app->group(['prefix' => 'users'], function () use($app) {
 
 // Access Token
 $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
+    //Request
     $app->post('/request', 'RequestController@getRequest');
     $app->post('/sendRequest', 'FCMController@getRequest');
+
+    //Rating
+    $app->post('/rating','RatingController@doVote');
 });
 
 // Request Access Tokens

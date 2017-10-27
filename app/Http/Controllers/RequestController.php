@@ -39,6 +39,12 @@ class RequestController extends Controller
 		$userId = $this->userId;
 		//$fcmToken = $request->get('fcm_token');
 		$result = array();
+		$isExistRequest = Requests::where('user_id', '=', $userId)->where('delete_at', '!=', NULL)->first();
+		if(!empty($isExistRequest)) {
+		    return $this->error(
+                1, "Transaction not yet completed", 200
+            );
+        }
 		Requests::create(
 			[
 				'user_id' => $userId,
@@ -131,7 +137,7 @@ class RequestController extends Controller
 					'requests.time_start'
 
 				)
-				->where('requests.vehicle_type', '=', '0')->get();
+				->where('requests.vehicle_type', '=', '0')->where('users.id', '!=', $userId)->get();
 		}
 
 		return json_decode($activeUser);
