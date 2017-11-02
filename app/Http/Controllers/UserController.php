@@ -82,15 +82,16 @@ class UserController extends Controller
 	}
 
 	public function signOut(Request $request) {
-		$user = User::find($request->user_id);
+		$user = new User;
+		$userInfo = $user->find($request->user_id);
 
-		if(!$user || $user->api_token != $request->api_token) {
+		if(!$userInfo || $userInfo->api_token != $request->api_token) {
 			return $this->error(0 ,"You haven't log in", 200);
 		}
 
-		$user->api_token = '';
+        $userInfo->api_token = '';
 
-		$user->save();
+        $userInfo->save();
 
 		return $this->success(
 			'','',200

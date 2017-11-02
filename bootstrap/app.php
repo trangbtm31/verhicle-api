@@ -64,7 +64,7 @@ $app->singleton(
 ]);*/
 /*$app->routeMiddleware([
     'oauth' =>
-        \LucaDegasperi\OAuth2Server\Middleware\OAuthMiddleware::class,
+            \LucaDegasperi\OAuth2Server\Middleware\OAuthMiddleware::class,
 ]);*/
 
 // $app->middleware([
