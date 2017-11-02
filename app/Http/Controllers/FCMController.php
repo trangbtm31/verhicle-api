@@ -14,13 +14,15 @@ use LaravelFCM\Message\PayloadNotificationBuilder;
 use FCM;
 use App\FCMService;
 use Illuminate\Http\Request;
+use LaravelFCM\Sender\FCMSender;
 
 
 class FCMController extends Controller
 {
 	public function sendRequest(Request $request) {
 		$optionBuilder = new OptionsBuilder();
-		$optionBuilder->setTimeToLive(60*20);
+		$fcmService = new FCMService();
+		$optionBuilder->setTimeToLive(60*10);
 
 		$notificationBuilder = new PayloadNotificationBuilder('my title');
 		$notificationBuilder->setBody('Hello world')
@@ -33,9 +35,9 @@ class FCMController extends Controller
 		$notification = $notificationBuilder->build();
 		$data = $dataBuilder->build();
 
-		$token = FCMService::select('token')->where('user_id','=',$request->get('end_user_id'));
+		$token = $fcmService->select('token')->where('user_id','=',$request->get('end_user_id'));
 
-		$downstreamResponse = FCM::sendTo($token, $option, $notification, $data);
+		$downstreamResponse = FCMSender::sendTo($token, $option, $notification, $data);
 
 		$downstreamResponse->numberSuccess();
 		$downstreamResponse->numberFailure();

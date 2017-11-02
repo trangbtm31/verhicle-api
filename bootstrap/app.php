@@ -19,6 +19,7 @@ try {
 |
 */
 
+class_alias(\LaravelFCM\Facades\FCM::class, 'FCM');
 $app = new Laravel\Lumen\Application(
     realpath(__DIR__.'/../')
 );
@@ -26,7 +27,6 @@ $app = new Laravel\Lumen\Application(
 $app->withFacades();
 
 $app->withEloquent();
-//class_alias(\LaravelFCM\Facades\FCM::class, 'FCM');
 
 /*
 |--------------------------------------------------------------------------
