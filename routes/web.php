@@ -22,7 +22,7 @@ $app->group(['prefix' => 'users'], function () use($app) {
     $app->post('/signin', 'UserController@signin');
     $app->post('/signout', 'UserController@signOut');
     $app->get('/{user_id}', 'UserController@show');
-    $app->put('/{user_id}', 'UserController@update');
+    $app->post('/{user_id}', 'UserController@update');
     $app->delete('/{user_id}', 'UserController@destroy');
 });
 
