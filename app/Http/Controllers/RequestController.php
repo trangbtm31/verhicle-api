@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers;
 
+use App\FCMService;
 use App\User;
 use App\Requests;
 //use App\FCMService;
@@ -33,19 +34,21 @@ class RequestController extends Controller
      */
 	public function getRequest(Request $request)
 	{
+		$request = new Request();
+		$fcmService = new FCMService();
         $timeStart = date("h:i", strtotime( $request->get('time_start')));
 
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $this->userId;
-		//$fcmToken = $request->get('fcm_token');
+		$fcmToken = $request->get('fcm_token');
 		$result = array();
-		$isExistRequest = Requests::where('user_id', '=', $userId)->where('delete_at', '!=', NULL)->first();
+		$isExistRequest = $request->where('user_id', '=', $userId)->where('delete_at', '!=', NULL)->first();
 		if(empty($isExistRequest)) {
 		    return $this->error(
                 1, "Transaction is not yet completed", 200
             );
         }
-		Requests::create(
+		$request->create(
 			[
 				'user_id' => $userId,
 				'source_location' => $request->get('source_location'),
@@ -55,15 +58,15 @@ class RequestController extends Controller
 				'device_id' => $request->get('device_id'),
 			]
 		);
-		/*$isExistToken = FCMService::where('token', '=', $fcmToken)->first();
+		$isExistToken = $fcmService->where('token', '=', $fcmToken)->first();
 		if (!$isExistToken) {
-			FCMService::create(
+			$fcmService->create(
 				[
 					'user_id' => $userId,
 					'token' => $fcmToken,
 				]
 			);
-		}*/
+		}
 		$activeUsers = $this->getActiveUser($vehicleType, $userId);
 		foreach ($activeUsers as $activeUser) {
 			array_push(
@@ -101,8 +104,9 @@ class RequestController extends Controller
 	 */
 	private function getActiveUser($vehicleType, $userId)
 	{
+		$request = new Request();
 		if ($vehicleType == 0) {
-			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
+			$activeUser = $request->join('users', 'requests.user_id', '=', 'users.id')
 				->select(
 					'users.id',
 					'users.phone',
@@ -120,7 +124,7 @@ class RequestController extends Controller
 				)
 				->where('requests.vehicle_type', '!=', '0')->where('requests.user_id', '!=', $userId)->get();
 		} else {
-			$activeUser = Requests::join('users', 'requests.user_id', '=', 'users.id')
+			$activeUser = $request->join('users', 'requests.user_id', '=', 'users.id')
 				->select(
 					'users.id',
 					'users.phone',

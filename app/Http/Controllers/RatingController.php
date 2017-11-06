@@ -9,33 +9,31 @@ use Illuminate\Http\Request;
 
 class RatingController extends Controller
 {
-    protected $journeyId;
+	/**
+	 * Create a new controller instance.
+	 *
+	 * @return void
+	 */
+	public function __construct()
+	{
+		//
+	}
 
-    protected $userId;
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct(Request $request)
-    {
-        //
-        $this->userId = $request->get('user_id');
-        $this->journeyId = $request->get('journey_id');
-    }
-
-    public function doVote(Request $request)
-    {
-        Request::create( [
-                'user_id' => $this->userId,
-                'journey_id' => $this->journeyId,
-                'rating_value' => $request->get('rating_value'),
-                'comment' => $request->get('comment')
-            ]
-        );
+	public function doVote(Request $request)
+	{
+		$rating = new Rating();
+		$totalRatingValue = 0;
+		$rating->create([
+			'user_id' => $request->get('user_id'),
+			'journey_id' => $request->get('journey_id'),
+			'rating_value' => $request->get('rating_value'),
+		]);
+		$totalRatings = $rating->where('journey_id', '=', $request->get('journey_id'))->get();
+		foreach ($totalRatings as $totalRating) {
+			$totalRatingValue += $totalRating;
+		}
 
     }
 
-    //
+	//
 }
