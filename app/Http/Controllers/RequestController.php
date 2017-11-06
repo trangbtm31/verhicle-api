@@ -40,7 +40,7 @@ class RequestController extends Controller
 		$timeStart = date("h:i", strtotime($request->get('time_start')));
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $this->userId;
-		$fcmToken = $request->get('device_id');
+		$fcmToken = $request->get('device_token');
 		$isOnwer = $requestInfo->where('user_id', '=', $userId)->first();
 		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('delete_at', '!=', null)->first();
 		if (empty($isExistRequest) && !empty($isOnwer)) {
