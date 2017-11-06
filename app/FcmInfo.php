@@ -11,10 +11,11 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 
-class FCMService extends Model
+class FcmInfo extends Model
 {
 	protected $fillable = ['id', 'user_id', 'token'];
 
+	protected $hidden = ['created_at', 'updated_at'];
 	/**
 	 * Define a BelongsTo relationship with App\User
 	 */

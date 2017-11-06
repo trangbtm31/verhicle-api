@@ -8,8 +8,7 @@
 
 namespace App\Http\Controllers;
 
-use App\FCMService;
-use App\User;
+use App\FcmInfo;
 use App\Requests;
 //use App\FCMService;
 use Illuminate\Http\Request;
@@ -19,36 +18,39 @@ class RequestController extends Controller
 {
 	protected $userId;
 
-    /**
-     * RequestController constructor.
-     * @param Request $request
-     */
+	/**
+	 * RequestController constructor.
+	 * @param Request $request
+	 */
 	public function __construct(Request $request)
 	{
 		$this->userId = $request->get('user_id');
 	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function getRequest(Request $request)
 	{
-		$request = new Request();
-		$fcmService = new FCMService();
-        $timeStart = date("h:i", strtotime( $request->get('time_start')));
+		$requestInfo = new Requests();
+		$fcmService = new FcmInfo();
+		$result = array();
 
+		$timeStart = date("h:i", strtotime($request->get('time_start')));
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $this->userId;
-		$fcmToken = $request->get('fcm_token');
-		$result = array();
-		$isExistRequest = $request->where('user_id', '=', $userId)->where('delete_at', '!=', NULL)->first();
-		if(empty($isExistRequest)) {
-		    return $this->error(
-                1, "Transaction is not yet completed", 200
-            );
-        }
-		$request->create(
+		$fcmToken = $request->get('device_id');
+		$isOnwer = $requestInfo->where('user_id', '=', $userId)->first();
+		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('delete_at', '!=', null)->first();
+		if (empty($isExistRequest) && !empty($isOnwer)) {
+			return $this->error(
+				1,
+				"Transaction is not yet completed",
+				200
+			);
+		}
+		$requestInfo->create(
 			[
 				'user_id' => $userId,
 				'source_location' => $request->get('source_location'),
@@ -91,6 +93,7 @@ class RequestController extends Controller
 				]
 			);
 		}
+
 		return $this->success(
 			"active_users",
 			$result,
@@ -104,9 +107,9 @@ class RequestController extends Controller
 	 */
 	private function getActiveUser($vehicleType, $userId)
 	{
-		$request = new Request();
+		$requestInfo = new Requests();
 		if ($vehicleType == 0) {
-			$activeUser = $request->join('users', 'requests.user_id', '=', 'users.id')
+			$activeUser = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
 				->select(
 					'users.id',
 					'users.phone',
@@ -124,7 +127,7 @@ class RequestController extends Controller
 				)
 				->where('requests.vehicle_type', '!=', '0')->where('requests.user_id', '!=', $userId)->get();
 		} else {
-			$activeUser = $request->join('users', 'requests.user_id', '=', 'users.id')
+			$activeUser = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
 				->select(
 					'users.id',
 					'users.phone',

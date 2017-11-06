@@ -25,6 +25,7 @@ class UserController extends Controller
 
 	public function register(Request $request)
 	{
+		$user = new User();
 		$this->validateRequest($request);
 		$reqPhoneNumber = $request->get('phone');
 		$existPhoneNumber = User::where('phone', $reqPhoneNumber)->first();
@@ -33,7 +34,7 @@ class UserController extends Controller
 			return $this->error(1, "This phone number is registered with another account", 200);
 		}
 
-		User::create(
+		$user->create(
 			[
 				'phone' => $reqPhoneNumber,
 				'name' => $request->get('name'),
@@ -53,10 +54,11 @@ class UserController extends Controller
 	{
 		$user = User::verify($request->get('phone'), $request->get('password'));
 		if ($user) {
+			$user = new User();
 			$api_token = str_random(30);
-			User::where('phone', $request->get('phone'))
+			$user->where('phone', $request->get('phone'))
 				->update(['api_token' => $api_token]);
-			$userInfo = User::where('phone', $request->get('phone'))->first();
+			$userInfo = $user->where('phone', $request->get('phone'))->first();
 
 			return $this->success("data",
 				[
@@ -82,16 +84,16 @@ class UserController extends Controller
 	}
 
 	public function signOut(Request $request) {
-		$user = new User;
-		$userInfo = $user->find($request->user_id);
+		$user = new User();
+		$isActiveUser = $user->find($request->user_id);
 
-		if(!$userInfo || $userInfo->api_token != $request->api_token) {
-			return $this->error(0 ,"You haven't log in", 200);
+		if(!$isActiveUser || $isActiveUser->api_token != $request->api_token) {
+			return $this->error(0 ,"You haven't logged in", 200);
 		}
 
-        $userInfo->api_token = '';
+		$isActiveUser->api_token = '';
 
-        $userInfo->save();
+		$isActiveUser->save();
 
 		return $this->success(
 			'','',200
@@ -112,21 +114,37 @@ class UserController extends Controller
 
 	public function update(Request $request, $id)
 	{
+		$user = new User();
+		$isUser = $user->find($id);
 
-		$user = User::find($id);
-
-		if (!$user) {
-			return $this->error("The user with {$id} doesn't exist", 200);
+		if (!$isUser) {
+			return $this->error(0,"The user with {$id} doesn't exist", 200);
 		}
+		if(!empty($isUser->api_token)) {
+			$userFields = array(
+				'phone',
+				'name',
+				'email',
+				'avatar_link',
+				'password',
+				'gender',
+				'address',
+				'birthday'
+			);
+			foreach($userFields as $userField) {
+				if(null !==($request->get($userField))) {
+					$isUser->$userField = $request->get($userField);
+					$isUser->save();
+				}
+			}
 
-		$this->validateRequest($request);
+			return $this->success(
+				'','',200
+			);
+		} else {
+			return $this->error(1,"The user with {$id} haven't logged in", 200);
 
-		$user->email = $request->get('email');
-		$user->password = Hash::make($request->get('password'));
-
-		$user->save();
-
-		return $this->success("The user with with id {$user->id} has been updated", 200);
+		}
 	}
 
 	public function destroy($id)
