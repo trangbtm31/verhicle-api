@@ -28,7 +28,7 @@ class UserController extends Controller
 		$user = new User();
 		$this->validateRequest($request);
 		$reqPhoneNumber = $request->get('phone');
-		$existPhoneNumber = User::where('phone', $reqPhoneNumber)->first();
+		$existPhoneNumber = $user->where('phone', $reqPhoneNumber)->first();
 
 		if ($existPhoneNumber) {
 			return $this->error(1, "This phone number is registered with another account", 200);
