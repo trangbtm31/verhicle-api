@@ -20,7 +20,7 @@ class UserController extends Controller
 
 		$users = User::all();
 
-		return $this->success($users, 200);
+        return $this->success('', '', 200);
 	}
 
 	public function register(Request $request)
@@ -109,7 +109,7 @@ class UserController extends Controller
 			return $this->error("The user with {$id} doesn't exist", 404);
 		}
 
-		return $this->success($user, 200);
+        return $this->success('', '', 200);
 	}
 
 	public function update(Request $request, $id)
