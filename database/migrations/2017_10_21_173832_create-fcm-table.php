@@ -16,7 +16,7 @@ class CreateFcmTable extends Migration
         //
         Schema::create('fcm_infos', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('token');
+            $table->string('token');
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();
