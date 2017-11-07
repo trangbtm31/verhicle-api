@@ -43,13 +43,13 @@ class RequestController extends Controller
 		$fcmToken = $request->get('device_token');
 		$isOnwer = $requestInfo->where('user_id', '=', $userId)->first();
 		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('delete_at', '!=', null)->first();
-		if (empty($isExistRequest) && !empty($isOnwer)) {
+		/*if (empty($isExistRequest) && !empty($isOnwer)) {
 			return $this->error(
 				1,
 				"Transaction is not yet completed",
 				200
 			);
-		}
+		}*/
 		$requestInfo->create(
 			[
 				'user_id' => $userId,
