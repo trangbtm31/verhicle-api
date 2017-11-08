@@ -8,7 +8,7 @@ class Controller extends BaseController
 {
 	public function success($typeOfData , $data, $code)
 	{
-		if(!empty($typeOfData) && !empty($data)) {
+		if(!empty($typeOfData)) {
 			return response()->json(['status' =>['error' => 0, 'message' => 'Success'], $typeOfData => $data], $code);
 		} else {
 			return response()->json(['status' =>['error' => 0, 'message' => 'Success']], $code);
