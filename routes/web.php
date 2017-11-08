@@ -17,13 +17,15 @@ $app->get('/', function () use ($app) {
 
 // Users
 $app->group(['prefix' => 'users'], function () use($app) {
-    $app->get('/', 'UserController@index');
     $app->post('/', 'UserController@register');
     $app->post('/signin', 'UserController@signin');
+});
+
+$app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app) {
     $app->post('/signout', 'UserController@signOut');
-    $app->get('/{user_id}', 'UserController@show');
     $app->post('/{user_id}', 'UserController@update');
-    $app->delete('/{user_id}', 'UserController@destroy');
+    //$app->delete('/{user_id}', 'UserController@destroy');
+
 });
 
 // Access Token
