@@ -34,7 +34,7 @@ class UserController extends Controller
 			return $this->error(1, "This phone number is registered with another account", 200);
 		}
 
-		$user->create(
+		$createUser = $user->create(
 			[
 				'phone' => $reqPhoneNumber,
 				'name' => $request->get('name'),
@@ -47,7 +47,11 @@ class UserController extends Controller
 
 		/*        return $this->success("The user with with id {$user->id} has been created", 201);*/
 
-		return $this->success('', '', 200);
+		if($createUser) {
+			return $this->success('', '', 200);
+		} else {
+			return $this->error(1, "Something went wrong", 200);
+		}
 	}
 
 	public function signin(Request $request)
