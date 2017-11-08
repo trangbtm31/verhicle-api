@@ -57,18 +57,23 @@ class RequestController extends Controller
 				'destination_location' => $request->get('destination_location'),
 				'time_start' => $timeStart,
 				'vehicle_type' => $vehicleType,
-				'device_id' => $request->get('device_id'),
 			]
 		);
 		$isExistToken = $fcmService->where('token', '=', $fcmToken)->first();
-		if (!$isExistToken) {
-			$fcmService->create(
-				[
-					'user_id' => $userId,
-					'token' => $fcmToken,
-				]
-			);
-		}
+		$isExistDeviceId = $fcmService->where('device_id', '=', $request->get('device_id'))->first();
+        if (!$isExistToken) {
+            $fcmService->create(
+                [
+                    'user_id' => $userId,
+                    'token' => $fcmToken,
+                ]
+            );
+        }
+        /*if(!$isExistDeviceId) {
+            $fcmInfo = $fcmService->where('user_id', '=', $userId)->first();
+            $fcmInfo->device_id = $request->get('device_id');
+            $fcmService->save();
+        }*/
 		$activeUsers = $this->getActiveUser($vehicleType, $userId);
 		foreach ($activeUsers as $activeUser) {
 			array_push(
