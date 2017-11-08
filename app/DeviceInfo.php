@@ -11,7 +11,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 
 
-class FcmInfo extends Model
+class DeviceInfo extends Model
 {
 	protected $fillable = ['id', 'user_id', 'token'];
 

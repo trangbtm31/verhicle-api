@@ -8,7 +8,7 @@
 
 namespace App\Http\Controllers;
 
-use App\FcmInfo;
+use App\DeviceInfo;
 use App\Requests;
 //use App\FCMService;
 use Illuminate\Http\Request;
@@ -34,7 +34,7 @@ class RequestController extends Controller
 	public function getRequest(Request $request)
 	{
 		$requestInfo = new Requests();
-		$fcmService = new FcmInfo();
+		$fcmService = new DeviceInfo();
 		$result = array();
 
 		$timeStart = date("h:i", strtotime($request->get('time_start')));

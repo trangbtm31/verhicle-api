@@ -38,9 +38,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @return bool|mixed
      */
     static function verify($phone, $password){
-        $user = User::where('phone', $phone)->first();
-        if($user && $password == $user->password){
-            return $user->id;
+        $user = new User();
+        $userVerify = $user->where('phone', $phone)->first();
+        if($userVerify && $password == $userVerify->password){
+            return $userVerify->id;
         }
         return false;
     }
