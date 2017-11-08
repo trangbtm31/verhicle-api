@@ -26,6 +26,7 @@ class UserController extends Controller
 	public function register(Request $request)
 	{
 		$user = new User();
+		dd($user);die;
 		$this->validateRequest($request);
 		$reqPhoneNumber = $request->get('phone');
 		$existPhoneNumber = $user->where('phone', $reqPhoneNumber)->first();
