@@ -31,7 +31,7 @@ $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app)
 // Access Token
 $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     //Request
-    $app->post('/request', 'RequestController@getRequest');
+    $app->post('/request', 'RequestController@pushInfomation');
     $app->post('/sendRequest', 'FCMController@getRequest');
 
     //Rating
