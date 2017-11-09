@@ -31,16 +31,17 @@ class RequestController extends Controller
 	 * @param Request $request
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function getRequest(Request $request)
+	public function pushInfomation(Request $request)
 	{
 		$requestInfo = new Requests();
 		$fcmService = new DeviceInfo();
 		$result = array();
-
 		$timeStart = date("h:i", strtotime($request->get('time_start')));
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $this->userId;
 		$fcmToken = $request->get('device_token');
+		$deviceId = $request->get('device_id');
+
 		$isOnwer = $requestInfo->where('user_id', '=', $userId)->first();
 		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('delete_at', '!=', null)->first();
 		/*if (empty($isExistRequest) && !empty($isOnwer)) {
@@ -59,21 +60,37 @@ class RequestController extends Controller
 				'vehicle_type' => $vehicleType,
 			]
 		);
-		$isExistToken = $fcmService->where('token', '=', $fcmToken)->first();
-		$isExistDeviceId = $fcmService->where('device_id', '=', $request->get('device_id'))->first();
-        if (!$isExistToken) {
-            $fcmService->create(
-                [
-                    'user_id' => $userId,
-                    'token' => $fcmToken,
-                ]
-            );
-        }
-        /*if(!$isExistDeviceId) {
-            $fcmInfo = $fcmService->where('user_id', '=', $userId)->first();
-            $fcmInfo->device_id = $request->get('device_id');
-            $fcmService->save();
-        }*/
+		$isExistDeviceInfo = $fcmService->where('user_id', '=', $userId)->first();
+		if (!$isExistDeviceInfo) {
+			$isExistToken = $fcmService
+				->where(
+					[
+						['token', '=', $fcmToken],
+						['user_id', '=', $userId],
+					]
+				)
+				->first();
+			$isExistDeviceId = $fcmService
+				->where(
+					[
+						['device_id', '=', $deviceId],
+						['user_id', '=', $userId],
+					]
+				)
+				->first();
+			if (!$isExistToken) {
+				$fcmService->create(
+					[
+						'user_id' => $userId,
+						'token' => $fcmToken,
+					]
+				);
+			}
+			if (!$isExistDeviceId) {
+				$isExistDeviceInfo = $deviceId;
+				$isExistDeviceInfo->save();
+			}
+		}
 		$activeUsers = $this->getActiveUser($vehicleType, $userId);
 		foreach ($activeUsers as $activeUser) {
 			array_push(
