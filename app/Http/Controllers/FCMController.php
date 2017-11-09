@@ -37,7 +37,7 @@ class FCMController extends Controller
 
 		$token = $fcmService->select('token')->where('user_id','=',$request->get('end_user_id'));
 
-		$downstreamResponse = FCMSender::sendTo($token, $option, $notification, $data);
+		$downstreamResponse = FCMSender::sendTo($token, $option, $notification);
 
 		$downstreamResponse->numberSuccess();
 		$downstreamResponse->numberFailure();

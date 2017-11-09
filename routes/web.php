@@ -32,7 +32,7 @@ $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app)
 $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     //Request
     $app->post('/request', 'RequestController@pushInfomation');
-    $app->post('/sendRequest', 'FCMController@getRequest');
+    $app->post('/sendRequest', 'RequestController@sendRequestToAnotherOne');
 
     //Rating
     $app->post('/rating','RatingController@doVote');
