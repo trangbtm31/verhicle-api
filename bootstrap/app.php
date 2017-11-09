@@ -90,7 +90,7 @@ $app->routeMiddleware([
 
 // $app->register(App\Providers\AppServiceProvider::class);
  $app->register(App\Providers\AuthServiceProvider::class);
- //$app->register(LaravelFCM\FCMServiceProvider::class);
+ $app->register(LaravelFCM\FCMServiceProvider::class);
 // $app->register(App\Providers\EventServiceProvider::class);
 
 /*

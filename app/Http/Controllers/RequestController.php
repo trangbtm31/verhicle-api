@@ -15,6 +15,7 @@ use LaravelFCM\Message\OptionsBuilder;
 use LaravelFCM\Message\PayloadDataBuilder;
 use LaravelFCM\Message\PayloadNotificationBuilder;
 use LaravelFCM\Sender\FCMSender;
+use FCM;
 
 use Illuminate\Http\Request;
 
@@ -156,8 +157,7 @@ class RequestController extends Controller
 
         $token = $fcmService->select('token')->where('user_id','=',$request->get('end_user_id'));
 
-        $fcmSender = new FCMSender();
-        $downstreamResponse = $fcmSender->sendTo($token, $option, $notification, $data);
+        $downstreamResponse = FCM::sendTo($token, $option, $notification);
 
     }
 
