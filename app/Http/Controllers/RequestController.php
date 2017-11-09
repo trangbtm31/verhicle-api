@@ -159,7 +159,7 @@ class RequestController extends Controller
         $downstreamResponse = FCM::sendTo($tokenInfo->token, $option, $notification);
 		return $this->success(
 			'token',
-			$downstreamResponse->numberFailure(),
+			$downstreamResponse->numberSuccess(),
 			200
 		);
 
