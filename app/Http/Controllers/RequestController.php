@@ -155,9 +155,13 @@ class RequestController extends Controller
         $notification = $notificationBuilder->build();
         $data = $dataBuilder->build();
 
-        $token = $fcmService->select('token')->where('user_id','=',$request->get('end_user_id'));
-
-        $downstreamResponse = FCM::sendTo($token, $option, $notification);
+        $tokenInfo = $fcmService->select('token')->where('user_id','=',$request->get('end_user_id'))->first();
+        $downstreamResponse = FCM::sendTo($tokenInfo->token, $option, $notification);
+		return $this->success(
+			'token',
+			$downstreamResponse->numberFailure(),
+			200
+		);
 
     }
 
