@@ -14,7 +14,6 @@ use App\Requests;
 use LaravelFCM\Message\OptionsBuilder;
 use LaravelFCM\Message\PayloadDataBuilder;
 use LaravelFCM\Message\PayloadNotificationBuilder;
-use LaravelFCM\Sender\FCMSender;
 use FCM;
 
 use Illuminate\Http\Request;
@@ -159,6 +158,7 @@ class RequestController extends Controller
             'avatar_link' => $user->avatar_link,
             'start_time' => $user->start_time,
             'vehicle_type' => $user->vehicle_type,
+            'note' => $request->get('note'),
         ]);
 
         $option = $optionBuilder->build();
