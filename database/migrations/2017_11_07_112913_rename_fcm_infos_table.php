@@ -13,7 +13,6 @@ class RenameFcmInfosTable extends Migration
      */
     public function up()
     {
-        Schema::rename('fcm_infos', 'device_infos');
         Schema::table('device_infos', function (Blueprint $table) {
             //
             $table->string('device_id');

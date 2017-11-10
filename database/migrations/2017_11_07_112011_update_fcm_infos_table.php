@@ -13,7 +13,7 @@ class UpdateFcmInfosTable extends Migration
      */
     public function up()
     {
-        Schema::table('fcm_infos', function (Blueprint $table) {
+        Schema::table('device_infos', function (Blueprint $table) {
             //
             $table->string('token')->change();
         });
@@ -26,7 +26,7 @@ class UpdateFcmInfosTable extends Migration
      */
     public function down()
     {
-        Schema::table('fcm_infos', function (Blueprint $table) {
+        Schema::table('device_infos', function (Blueprint $table) {
             $table->dropColumn('token');
             //
         });

@@ -14,7 +14,7 @@ class CreateFcmTable extends Migration
     public function up()
     {
         //
-        Schema::create('fcm_infos', function (Blueprint $table) {
+        Schema::create('device_infos', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('token');
             $table->integer('user_id')->unsigned();
@@ -31,6 +31,6 @@ class CreateFcmTable extends Migration
     public function down()
     {
         //
-        Schema::dropIfExists('fcm_infos');
+        Schema::dropIfExists('device_infos');
     }
 }
