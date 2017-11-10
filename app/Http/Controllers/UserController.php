@@ -9,11 +9,10 @@ use Illuminate\Http\Request;
 class UserController extends Controller
 {
 
-	/*public function __construct()
+	public function __construct()
 	{
-		$this->middleware('Authorize:' . __CLASS__, ['except' => ['index', 'show']]);
-		$this->middleware('oauth', ['except' => ['index', 'show']]);
-	}*/
+		//
+	}
 
 	public function index()
 	{
@@ -88,43 +87,39 @@ class UserController extends Controller
 	}
 
 	public function signOut(Request $request) {
-		$user = new User();
-		$isActiveUser = $user->find($request->user_id);
+		$user = $request->user();
 
-		if(!$isActiveUser || $isActiveUser->api_token != $request->api_token) {
+		if(!$user) {
 			return $this->error(0 ,"You haven't logged in", 200);
 		}
 
-		$isActiveUser->api_token = '';
+		$user->api_token = '';
 
-		$isActiveUser->save();
+		$user->save();
 
 		return $this->success(
 			'','',200
 		);
 	}
 
-	public function show($id)
+	public function show(Request $request)
 	{
-
-		$user = User::find($id);
-
+        $user = $request->user();
 		if (!$user) {
-			return $this->error("The user with {$id} doesn't exist", 404);
+			return $this->error(1,"This user with doesn't exist", 200);
 		}
 
-        return $this->success('', '', 200);
+        return $this->success('user_info', $user, 200);
 	}
 
-	public function update(Request $request, $id)
+	public function update(Request $request)
 	{
-		$user = new User();
-		$isUser = $user->find($id);
+		$user = $request->user();
 
-		if (!$isUser) {
-			return $this->error(0,"The user with {$id} doesn't exist", 200);
+		if (!$user) {
+			return $this->error(0,"This user with doesn't exist", 200);
 		}
-		if(!empty($isUser->api_token)) {
+		if(!empty($user->api_token)) {
 			$userFields = array(
 				'phone',
 				'name',
@@ -137,16 +132,16 @@ class UserController extends Controller
 			);
 			foreach($userFields as $userField) {
 				if(null !==($request->get($userField))) {
-					$isUser->$userField = $request->get($userField);
-					$isUser->save();
+					$user->$userField = $request->get($userField);
+					$user->save();
 				}
 			}
 
 			return $this->success(
-				'','',200
+				'user_info',$user ,200
 			);
 		} else {
-			return $this->error(1,"The user with {$id} haven't logged in", 200);
+			return $this->error(1,"This user with haven't logged in", 200);
 
 		}
 	}
@@ -178,13 +173,4 @@ class UserController extends Controller
 		$this->validate($request, $rules);
 	}
 
-	public function isAuthorized(Request $request)
-	{
-
-		$resource = "users";
-
-		// $user     = User::find($this->getArgs($request)["user_id"]);
-
-		return $this->authorizeUser($request, $resource);
-	}
 }

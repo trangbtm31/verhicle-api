@@ -23,7 +23,7 @@ $app->group(['prefix' => 'users'], function () use($app) {
 
 $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app) {
     $app->post('/signout', 'UserController@signOut');
-    $app->post('/{user_id}', 'UserController@update');
+    $app->post('/update', 'UserController@update');
     //$app->delete('/{user_id}', 'UserController@destroy');
 
 });
@@ -32,7 +32,7 @@ $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app)
 $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     //Request
     $app->post('/request', 'RequestController@pushInfomation');
-    $app->post('/sendRequest', 'RequestController@sendRequestToAnotherOne');
+    $app->post('/send-request', 'RequestController@sendRequestToAnotherOne');
 
     //Rating
     $app->post('/rating','RatingController@doVote');

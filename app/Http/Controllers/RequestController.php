@@ -22,7 +22,11 @@ use Illuminate\Http\Request;
 
 class RequestController extends Controller
 {
-    protected $userId;
+    /**
+     * @var user
+     */
+
+    protected $user;
 
     /**
      * RequestController constructor.
@@ -30,7 +34,8 @@ class RequestController extends Controller
      */
     public function __construct(Request $request)
     {
-        $this->userId = $request->get('user_id');
+
+        $this->user = $request->user();
     }
 
     /**
@@ -41,10 +46,11 @@ class RequestController extends Controller
     {
         $requestInfo = new Requests();
         $fcmService = new DeviceInfo();
+        $user = $this->user;
         $result = array();
         $timeStart = date("h:i", strtotime($request->get('time_start')));
         $vehicleType = $request->get('vehicle_type');
-        $userId = $this->userId;
+        $userId = $user->id;
         $fcmToken = $request->get('device_token');
         $deviceId = $request->get('device_id');
 
@@ -135,7 +141,10 @@ class RequestController extends Controller
     {
         $optionBuilder = new OptionsBuilder();
         $fcmService = new DeviceInfo();
-        $optionBuilder->setTimeToLive(60*10);
+        $user = $this->user;
+        $userId = $user->id;
+        $optionBuilder->setTimeToLive(60 * 5);
+
 
         $notificationBuilder = new PayloadNotificationBuilder('You have a request!');
         $notificationBuilder->setBody('Hey, would you like to go together?')
@@ -143,25 +152,29 @@ class RequestController extends Controller
 
         $dataBuilder = new PayloadDataBuilder();
         $dataBuilder->addData([
-            'user_id' => $request->get('start_user_id'),
-            'user_name' => $request->get('user_name'),
-            'start_location' => $request->get('start_location'),
-            'end_location' => $request->get('end_location'),
-            'start_time' => $request->get('start_time'),
-            'vehicle_type' => $request->get('vehicle_type'),
+            'user_id' => $userId,
+            'user_name' => $user->name,
+            'start_location' => $user->start_location,
+            'end_location' => $user->end_location,
+            'avatar_link' => $user->avatar_link,
+            'start_time' => $user->start_time,
+            'vehicle_type' => $user->vehicle_type,
         ]);
 
         $option = $optionBuilder->build();
         $notification = $notificationBuilder->build();
         $data = $dataBuilder->build();
 
-        $tokenInfo = $fcmService->select('token')->where('user_id','=',$request->get('end_user_id'))->first();
-        $downstreamResponse = FCM::sendTo($tokenInfo->token, $option, $notification);
-		return $this->success(
-			'token',
-			$downstreamResponse->numberSuccess(),
-			200
-		);
+        $tokenInfo = $fcmService->select('token')->where('user_id', '=', $request->get('receiver_id'))->first();
+        $downstreamResponse = FCM::sendTo($tokenInfo->token, $option, $notification, $data);
+        return $this->success(
+            "FCM_info",
+            [
+                'data' => $data,
+                'token_success_number'=> $downstreamResponse->numberSuccess()
+            ],
+            200
+        );
 
     }
 
