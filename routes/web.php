@@ -17,7 +17,7 @@ $app->get('/', function () use ($app) {
 
 // Users
 $app->group(['prefix' => 'users'], function () use($app) {
-    $app->post('/', 'UserController@register');
+    $app->post('/register', 'UserController@register');
     $app->post('/signin', 'UserController@signin');
 });
 
