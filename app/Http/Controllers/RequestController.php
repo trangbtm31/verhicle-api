@@ -99,7 +99,7 @@ class RequestController extends Controller
                 );
             }
             if (!$isExistDeviceId) {
-                $isExistDeviceInfo = $deviceId;
+                $isExistDeviceInfo->device_id = $deviceId;
                 $isExistDeviceInfo->save();
             }
         }
