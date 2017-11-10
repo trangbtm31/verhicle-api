@@ -45,7 +45,7 @@ class RequestController extends Controller
     {
         $requestInfo = new Requests();
         $fcmService = new DeviceInfo();
-        $user = $this->user;
+        $user = $request->user();
         $result = array();
         $timeStart = date("h:i", strtotime($request->get('time_start')));
         $vehicleType = $request->get('vehicle_type');
