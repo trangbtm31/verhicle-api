@@ -6,7 +6,7 @@ use Laravel\Lumen\Routing\Controller as BaseController;
 
 class Controller extends BaseController
 {
-	public function success($typeOfData , $data, $code)
+	public function success($code, $typeOfData = null , $data = null)
 	{
 		if(!empty($typeOfData)) {
 			return response()->json(['status' =>['error' => 0, 'message' => 'Success'], $typeOfData => $data], $code);

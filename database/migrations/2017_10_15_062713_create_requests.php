@@ -23,7 +23,7 @@ class CreateRequests extends Migration
             $table->time('time_start');
             $table->integer('vehicle_type');
             $table->string('device_id');
-            $table->date('delete_at')->nullable();
+            $table->dateTime('delete_at')->nullable();
             $table->timestamps();
         });
     }

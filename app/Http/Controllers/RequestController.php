@@ -47,31 +47,31 @@ class RequestController extends Controller
 		$fcmService = new DeviceInfo();
 		$user = $request->user();
 		$result = array();
-		$timeStart = date("h:i", strtotime($request->get('time_start')));
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $user->id;
 		$fcmToken = $request->get('device_token');
 		$deviceId = $request->get('device_id');
 
-		$isOnwer = $requestInfo->where('user_id', '=', $userId)->first();
-		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('delete_at', '!=', null)->first();
-		/*if (empty($isExistRequest) && !empty($isOnwer)) {
+		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+		if ($isExistRequest) {
 			return $this->error(
 				1,
 				"Transaction is not yet completed",
 				200
 			);
-		}*/
+		}
 		$requestInfo->create(
 			[
 				'user_id' => $userId,
 				'source_location' => $request->get('source_location'),
 				'destination_location' => $request->get('destination_location'),
-				'time_start' => $timeStart,
+				'time_start' => date("h:i", strtotime($request->get('time_start'))),
 				'vehicle_type' => $vehicleType,
 				'status' => 1,
 			]
 		);
+
+		// Check if this device info hasn't saved yet
 		$isExistDeviceInfo = $fcmService->where('user_id', '=', $userId)->first();
 		if (!$isExistDeviceInfo) {
 			$isExistToken = $fcmService
@@ -103,7 +103,7 @@ class RequestController extends Controller
 				$isExistDeviceInfo->save();
 			}
 		}
-		$activeUsers = $this->getUserRequest( $userId, $vehicleType);
+		$activeUsers = $this->getUserRequest($userId, $vehicleType);
 		foreach ($activeUsers as $activeUser) {
 			array_push(
 				$result,
@@ -129,9 +129,9 @@ class RequestController extends Controller
 		}
 
 		return $this->success(
+			200,
 			"active_users",
-			$result,
-			200
+			$result
 		);
 
 	}
@@ -145,6 +145,7 @@ class RequestController extends Controller
 	{
 		$optionBuilder = new OptionsBuilder();
 		$fcmService = new DeviceInfo();
+		$requests = new Requests();
 		$user = $this->user;
 		$userId = $user->id;
 		$optionBuilder->setTimeToLive(60 * 5);
@@ -155,6 +156,8 @@ class RequestController extends Controller
 
 		$userRequest = $this->getUserRequest($userId);
 		$dataBuilder = new PayloadDataBuilder();
+
+		// Add payload data
 		$dataBuilder->addData(
 			[
 				'user_id' => $userId,
@@ -171,18 +174,45 @@ class RequestController extends Controller
 		$option = $optionBuilder->build();
 		$notification = $notificationBuilder->build();
 		$data = $dataBuilder->build();
+		// Get fcm token from user id
 		$tokenInfo = $fcmService->select('token')->where('user_id', '=', $request->get('receiver_id'))->first();
+
+		// Send Notification to this token.
 		$downstreamResponse = FCM::sendTo($tokenInfo->token, $option, $notification, $data);
 
+		// The number of success push notification.
+		$isSentSusscess = $downstreamResponse->numberSuccess();
+		$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+		if ($isSentSusscess) {
+			$requestInfo->status = 2; // This request owner has sent request to another user.
+			$requestInfo->save();
+		}
+
 		return $this->success(
+			200,
 			"FCM_info",
 			[
 				'data' => $data->toArray(),
-				'token_success_number' => $downstreamResponse->numberSuccess(),
-			],
-			200
+				'success' => $isSentSusscess,
+			]
 		);
 
+	}
+
+	public function cancelRequest() {
+		$user = $this->user;
+		$request = new Requests();
+		$requestInfo = $request->where('user_id', '=', $user->id)->where('status', '!=', 0)->first();
+		if($requestInfo) {
+			$requestInfo->status = 0;
+			$requestInfo->delete_at = date('Y-m-d H:i:s', time());
+
+			$requestInfo->save();
+			
+			return $this->success(200);
+		} else {
+			return $this->error(1, "You haven't sent any request", 200);
+		}
 	}
 
 	public function acceptRequest(Request $request)
@@ -217,16 +247,17 @@ class RequestController extends Controller
 				'requests.time_start'
 
 			);
-		if($vehicleType) {
+		if ($vehicleType) {
 			$userList = $userRequest->where('requests.user_id', '!=', $userId);
-			if($vehicleType == 0) {
+			if ($vehicleType == 0) {
 				$result = $userList->where('requests.vehicle_type', '!=', '0')->get();
 			} else {
 				$result = $userList->where('requests.vehicle_type', '=', '0')->get();
 			}
 		} else {
-			$result = $userRequest->where('requests.user_id', '=', $userId)->where('status', '=', $status)->first();
+			$result = $userRequest->where('requests.user_id', '=', $userId)->where('requests.status', '=', $status)->first();
 		}
+
 		return json_decode($result);
 	}
 }
