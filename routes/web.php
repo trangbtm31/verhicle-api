@@ -33,6 +33,8 @@ $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     //Request
     $app->post('/request', 'RequestController@pushInfomation');
     $app->post('/send-request', 'RequestController@sendRequestToAnotherOne');
+    $app->post('/accept-request', 'RequestController@acceptRequest');
+    $app->post('/deny-request', 'RequestController@denyRequest');
 
     //Rating
     $app->post('/rating','RatingController@doVote');
