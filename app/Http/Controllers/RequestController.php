@@ -217,7 +217,7 @@ class RequestController extends Controller
 				'requests.time_start'
 
 			);
-		if($vehicleType) {
+		if($vehicleType !== NULL) {
 			$userList = $userRequest->where('requests.user_id', '!=', $userId);
 			if($vehicleType == 0) {
 				$result = $userList->where('requests.vehicle_type', '!=', '0')->get();
