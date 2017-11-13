@@ -47,20 +47,19 @@ class RequestController extends Controller
 		$fcmService = new DeviceInfo();
 		$user = $request->user();
 		$result = array();
-		$timeStart = date("h:i", strtotime($request->get('time_start')));
 		$vehicleType = $request->get('vehicle_type');
 		$userId = $user->id;
 		$fcmToken = $request->get('device_token');
 		$deviceId = $request->get('device_id');
 
 		$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->first();
-		/*if ($isExistRequest) {
+		if ($isExistRequest) {
 			return $this->error(
 				1,
 				"Transaction is not yet completed",
 				200
 			);
-		}*/
+		}
 		$requestInfo->create(
 			[
 				'user_id' => $userId,
@@ -175,19 +174,16 @@ class RequestController extends Controller
 		$option = $optionBuilder->build();
 		$notification = $notificationBuilder->build();
 		$data = $dataBuilder->build();
-		// Get fcm token from user id
 		$tokenInfo = $fcmService->select('token')->where('user_id', '=', $request->get('receiver_id'))->first();
-
-		// Send Notification to this token.
 		$downstreamResponse = FCM::sendTo($tokenInfo->token, $option, $notification, $data);
 
 		// The number of success push notification.
 		$isSentSusscess = $downstreamResponse->numberSuccess();
-		/*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+		$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
 		if ($isSentSusscess) {
 			$requestInfo->status = 2; // This request owner has sent request to another user.
 			$requestInfo->save();
-		}*/
+		}
 
 		return $this->success(
 			200,
@@ -251,9 +247,9 @@ class RequestController extends Controller
 				'requests.time_start'
 
 			);
-		if($vehicleType !== NULL) {
+		if($vehicleType) {
 			$userList = $userRequest->where('requests.user_id', '!=', $userId);
-			if ($vehicleType == 0) {
+			if($vehicleType == 0) {
 				$result = $userList->where('requests.vehicle_type', '!=', '0')->get();
 			} else {
 				$result = $userList->where('requests.vehicle_type', '=', '0')->get();

@@ -51,9 +51,9 @@ class RatingController extends Controller
         ];
 
         return $this->success(
+            200,
             "rating_info",
-            $result,
-            200
+            $result
         );
 
     }
