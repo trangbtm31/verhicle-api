@@ -183,11 +183,11 @@ class RequestController extends Controller
 
 		// The number of success push notification.
 		$isSentSusscess = $downstreamResponse->numberSuccess();
-		$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+		/*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
 		if ($isSentSusscess) {
 			$requestInfo->status = 2; // This request owner has sent request to another user.
 			$requestInfo->save();
-		}
+		}*/
 
 		return $this->success(
 			200,
