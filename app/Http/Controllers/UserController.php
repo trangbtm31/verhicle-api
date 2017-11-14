@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use App\Http\Controllers\RequestController;
 
 use Illuminate\Http\Request;
 
@@ -19,7 +20,7 @@ class UserController extends Controller
 
 		$users = User::all();
 
-        return $this->success(200);
+		return $this->success(200);
 	}
 
 	public function register(Request $request)
@@ -46,7 +47,7 @@ class UserController extends Controller
 
 		/*        return $this->success("The user with with id {$user->id} has been created", 201);*/
 
-		if($createUser) {
+		if ($createUser) {
 			return $this->success(200);
 		} else {
 			return $this->error(1, "Something went wrong", 200);
@@ -55,13 +56,36 @@ class UserController extends Controller
 
 	public function signin(Request $request)
 	{
-		$user = User::verify($request->get('phone'), $request->get('password'));
-		if ($user) {
-			$user = new User();
+		$userId = User::verify($request->get('phone'), $request->get('password'));
+		if ($userId) {
+			$userInfo = new User();
+			$requests = new RequestController($request);
+			$cancelRequest = $requests->doCancelRequest($userId);
+
+			$isActiveUser = $userInfo->where('phone', $request->get('phone'))->first();
+			if (!empty($isActiveUser->api_token)) {
+				return $this->success(
+					200,
+					"data",
+					[
+						"api_token" => $isActiveUser->api_token,
+						"user_info" => [
+							"id" => $isActiveUser->id,
+							"name" => $isActiveUser->name,
+							"phone" => $isActiveUser->phone,
+							"email" => $isActiveUser->email,
+							"avatar_link" => $isActiveUser->avatar_link,
+							"gender" => $isActiveUser->gender,
+							"address" => $isActiveUser->address,
+							"birthday" => $isActiveUser->birthday,
+						],
+
+					]
+				);
+			}
 			$api_token = str_random(30);
-			$user->where('phone', $request->get('phone'))
-				->update(['api_token' => $api_token]);
-			$userInfo = $user->where('phone', $request->get('phone'))->first();
+			$isActiveUser->api_token = $api_token;
+			$isActiveUser->save();
 
 			return $this->success(
 				200,
@@ -69,14 +93,14 @@ class UserController extends Controller
 				[
 					"api_token" => $api_token,
 					"user_info" => [
-						"id" => $userInfo->id,
-						"name" => $userInfo->name,
-						"phone" => $userInfo->phone,
-						"email" => $userInfo->email,
-						"avatar_link" => $userInfo->avatar_link,
-						"gender" => $userInfo->gender,
-						"address" => $userInfo->address,
-						"birthday" => $userInfo->birthday,
+						"id" => $isActiveUser->id,
+						"name" => $isActiveUser->name,
+						"phone" => $isActiveUser->phone,
+						"email" => $isActiveUser->email,
+						"avatar_link" => $isActiveUser->avatar_link,
+						"gender" => $isActiveUser->gender,
+						"address" => $isActiveUser->address,
+						"birthday" => $isActiveUser->birthday,
 					],
 
 				]
@@ -87,12 +111,15 @@ class UserController extends Controller
 
 	}
 
-	public function signOut(Request $request) {
+	public function signOut(Request $request)
+	{
 		$user = $request->user();
+		$requests = new RequestController();
 
-		if(!$user) {
-			return $this->error(0 ,"You haven't logged in", 200);
+		if (!$user) {
+			return $this->error(0, "You haven't logged in", 200);
 		}
+		$cancelRequest = $requests->changeRequestStatus($user->id, 0);
 
 		$user->api_token = '';
 
@@ -103,12 +130,12 @@ class UserController extends Controller
 
 	public function show(Request $request)
 	{
-        $user = $request->user();
+		$user = $request->user();
 		if (!$user) {
-			return $this->error(1,"This user with doesn't exist", 200);
+			return $this->error(1, "This user with doesn't exist", 200);
 		}
 
-        return $this->success(200, 'user_info', $user);
+		return $this->success(200, 'user_info', $user);
 	}
 
 	public function update(Request $request)
@@ -116,9 +143,9 @@ class UserController extends Controller
 		$user = $request->user();
 
 		if (!$user) {
-			return $this->error(0,"This user with doesn't exist", 200);
+			return $this->error(0, "This user with doesn't exist", 200);
 		}
-		if(!empty($user->api_token)) {
+		if (!empty($user->api_token)) {
 			$userFields = array(
 				'phone',
 				'name',
@@ -127,18 +154,18 @@ class UserController extends Controller
 				'password',
 				'gender',
 				'address',
-				'birthday'
+				'birthday',
 			);
-			foreach($userFields as $userField) {
-				if(null !==($request->get($userField))) {
+			foreach ($userFields as $userField) {
+				if (null !== ($request->get($userField))) {
 					$user->$userField = $request->get($userField);
 					$user->save();
 				}
 			}
 
-			return $this->success( 200, 'user_info',$user);
+			return $this->success(200, 'user_info', $user);
 		} else {
-			return $this->error(1,"This user with haven't logged in", 200);
+			return $this->error(1, "This user with haven't logged in", 200);
 
 		}
 	}

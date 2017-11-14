@@ -155,6 +155,13 @@ class RequestController extends Controller
 			->setSound('default');
 
 		$userRequest = $this->getUserRequest($userId);
+		if(!$userRequest) {
+			return $this->error(
+				1,
+				"You sent request to another person !",
+				200
+			);
+		}
 		$dataBuilder = new PayloadDataBuilder();
 
 		// Add payload data
@@ -179,11 +186,11 @@ class RequestController extends Controller
 
 		// The number of success push notification.
 		$isSentSusscess = $downstreamResponse->numberSuccess();
-		$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+		/*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
 		if ($isSentSusscess) {
 			$requestInfo->status = 2; // This request owner has sent request to another user.
 			$requestInfo->save();
-		}
+		}*/
 
 		return $this->success(
 			200,
@@ -201,18 +208,31 @@ class RequestController extends Controller
 	 */
 	public function cancelRequest() {
 		$user = $this->user;
+		$cancel = $this->doCancelRequest($user->id);
+		if($cancel) {
+			return $this->success(200);
+		} else {
+			return $this->error(1, "You haven't sent any request", 200);
+		}
+	}
+
+	/**
+	 * @param $userId
+	 * @param $status
+	 * @return int|mixed
+	 */
+	public function doCancelRequest($userId) {
 		$request = new Requests();
-		$requestInfo = $request->where('user_id', '=', $user->id)->where('status', '!=', 0)->first();
+		$requestInfo = $request->where('user_id', '=', $userId)->where('status', '!=', 0)->first();
 		if($requestInfo) {
 			$requestInfo->status = 0;
 			$requestInfo->delete_at = date('Y-m-d H:i:s', time());
 
 			$requestInfo->save();
-			
-			return $this->success(200);
-		} else {
-			return $this->error(1, "You haven't sent any request", 200);
+			return $requestInfo->id;
 		}
+
+		return 0;
 	}
 
 	public function acceptRequest(Request $request)
@@ -247,7 +267,7 @@ class RequestController extends Controller
 				'requests.time_start'
 
 			);
-		if($vehicleType) {
+		if($vehicleType != NULL) {
 			$userList = $userRequest->where('requests.user_id', '!=', $userId);
 			if($vehicleType == 0) {
 				$result = $userList->where('requests.vehicle_type', '!=', '0')->get();
