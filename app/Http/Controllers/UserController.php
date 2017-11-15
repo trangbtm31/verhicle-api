@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
-use App\Http\Controllers\RequestController;
+use App\Requests;
 
 use Illuminate\Http\Request;
 
@@ -59,8 +59,7 @@ class UserController extends Controller
 		$userId = User::verify($request->get('phone'), $request->get('password'));
 		if ($userId) {
 			$userInfo = new User();
-			$requests = new RequestController($request);
-			$cancelRequest = $requests->doCancelRequest($userId);
+			$cancelRequest = Requests::cancelRequest($userId);
 
 			$isActiveUser = $userInfo->where('phone', $request->get('phone'))->first();
 			if (!empty($isActiveUser->api_token)) {
@@ -114,12 +113,11 @@ class UserController extends Controller
 	public function signOut(Request $request)
 	{
 		$user = $request->user();
-		$requests = new RequestController();
 
 		if (!$user) {
 			return $this->error(0, "You haven't logged in", 200);
 		}
-		$cancelRequest = $requests->changeRequestStatus($user->id, 0);
+		$cancelRequest = Requests::cancelRequest($user->id);
 
 		$user->api_token = '';
 
