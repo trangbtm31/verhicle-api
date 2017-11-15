@@ -158,7 +158,7 @@ class RequestController extends Controller
 		if(!$userRequest) {
 			return $this->error(
 				1,
-				"You sent request to another person !",
+				"You haven't post any request yet !",
 				200
 			);
 		}
@@ -208,31 +208,12 @@ class RequestController extends Controller
 	 */
 	public function cancelRequest() {
 		$user = $this->user;
-		$cancel = $this->doCancelRequest($user->id);
+		$cancel = Requests::cancelRequest($user->id);
 		if($cancel) {
 			return $this->success(200);
 		} else {
 			return $this->error(1, "You haven't sent any request", 200);
 		}
-	}
-
-	/**
-	 * @param $userId
-	 * @param $status
-	 * @return int|mixed
-	 */
-	public function doCancelRequest($userId) {
-		$request = new Requests();
-		$requestInfo = $request->where('user_id', '=', $userId)->where('status', '!=', 0)->first();
-		if($requestInfo) {
-			$requestInfo->status = 0;
-			$requestInfo->delete_at = date('Y-m-d H:i:s', time());
-
-			$requestInfo->save();
-			return $requestInfo->id;
-		}
-
-		return 0;
 	}
 
 	public function acceptRequest(Request $request)

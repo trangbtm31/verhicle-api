@@ -26,4 +26,18 @@ class Requests extends Model
 		return $this->belongsTo('App\User');
 	}
 
+	static function cancelRequest ($userId) {
+        $request = new Requests();
+        $requestInfo = $request->where('user_id', '=', $userId)->where('status', '!=', 0)->first();
+        if($requestInfo) {
+            $requestInfo->status = 0;
+            $requestInfo->delete_at = date('Y-m-d H:i:s', time());
+
+            $requestInfo->save();
+            return $requestInfo->id;
+        }
+
+        return 0;
+    }
+
 }
