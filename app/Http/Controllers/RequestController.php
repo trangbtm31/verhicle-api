@@ -73,36 +73,17 @@ class RequestController extends Controller
         );
 
         // Check if this device info hasn't saved yet
-        $isExistDeviceInfo = $fcmService->where('user_id', '=', $userId)->first();
-        if (!$isExistDeviceInfo) {
-            $isExistToken = $fcmService
-                ->where(
-                    [
-                        ['token', '=', $fcmToken],
-                        ['user_id', '=', $userId],
-                    ]
-                )
-                ->first();
-            $isExistDeviceId = $fcmService
-                ->where(
-                    [
-                        ['device_id', '=', $deviceId],
-                        ['user_id', '=', $userId],
-                    ]
-                )
-                ->first();
-            if (!$isExistToken) {
-                $fcmService->create(
-                    [
-                        'user_id' => $userId,
-                        'token' => $fcmToken,
-                    ]
-                );
-            }
-            if (!$isExistDeviceId && $deviceId) {
-                $isExistDeviceInfo->device_id = $deviceId;
-                $isExistDeviceInfo->save();
-            }
+        $isExistUser = $fcmService->where('user_id', '=', $userId)->first();
+        if (!$isExistUser) {
+            $fcmService->create(
+                [
+                    'user_id' => $userId,
+                    'token' => $fcmToken,
+                ]
+            );
+        } elseif($isExistUser && $isExistUser->device_token != $fcmToken) {
+            $isExistUser->device_token = $fcmToken;
+            $isExistUser->save();
         }
         $activeUsers = $this->getUserRequest($userId, $vehicleType);
         foreach ($activeUsers as $activeUser) {
