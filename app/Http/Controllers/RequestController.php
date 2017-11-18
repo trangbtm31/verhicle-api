@@ -221,8 +221,8 @@ class RequestController extends Controller
     public function acceptRequest(Request $request)
     {
         $user = $this->user;
-        $senderId = $user->id;
-        $receiverId = $request->get('receiver_id');
+        $senderId = $request->get('sender_id');
+        $receiverId = $user->id;
         $journey = new Journeys();
 
         $requestSenderInfo = $this->getOwnerActiveRequest($senderId);
