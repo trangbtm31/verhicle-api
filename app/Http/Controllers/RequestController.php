@@ -229,7 +229,7 @@ class RequestController extends Controller
         $requestReceriverInfo = $this->getOwnerActiveRequest($receiverId);
 
         if(!$requestSenderInfo or !$requestReceriverInfo) {
-            return $this->error(1, "You haven't sent any request", 200);
+            return $this->error(1, "This user haven't sent any request", 200);
         }
         $requestSenderInfo->status = 2;
         $requestReceriverInfo->status = 2;
@@ -249,7 +249,7 @@ class RequestController extends Controller
         $receiverInfo = $this->getUserRequest($receiverId,null,2);
 
         $result = array(
-            "start_time" => date('Y-m-d H:i:s'),
+            "start_time" => date('Y-m-d H:i:s', time()),
             "sender" => [
                 "user_info" => [
                     "id" => $senderInfo->id,
@@ -264,8 +264,7 @@ class RequestController extends Controller
                 "request_info" => [
                     "vehicle_type" => $senderInfo->vehicle_type,
                     "source_location" => json_decode($senderInfo->source_location),
-                    "dest_location" => json_decode($senderInfo->destination_location),
-                    "time_start" => $senderInfo->time_start,
+                    "dest_location" => json_decode($senderInfo->destination_location)
                 ],
             ],
             "receiver" => [
@@ -282,8 +281,7 @@ class RequestController extends Controller
                 "request_info" => [
                     "vehicle_type" => $receiverInfo->vehicle_type,
                     "source_location" => json_decode($receiverInfo->source_location),
-                    "dest_location" => json_decode($receiverInfo->destination_location),
-                    "time_start" => $receiverInfo->time_start,
+                    "dest_location" => json_decode($receiverInfo->destination_location)
                 ]
             ]
         );
@@ -305,7 +303,7 @@ class RequestController extends Controller
         $requests = new Requests();
 
         $result = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
-        return json_decode($result);
+        return $result;
     }
 
     /**

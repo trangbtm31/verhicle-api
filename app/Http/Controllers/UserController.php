@@ -145,7 +145,6 @@ class UserController extends Controller
 		}
 		if (!empty($user->api_token)) {
 			$userFields = array(
-				'phone',
 				'name',
 				'email',
 				'avatar_link',
@@ -156,7 +155,11 @@ class UserController extends Controller
 			);
 			foreach ($userFields as $userField) {
 				if (null !== ($request->get($userField))) {
-					$user->$userField = $request->get($userField);
+					if($userField == 'birthday') {
+						$user->birthday = date('Y-m-d', strtotime($request->get('birthday')));
+					} else {
+						$user->$userField = $request->get($userField);
+					}
 					$user->save();
 				}
 			}
