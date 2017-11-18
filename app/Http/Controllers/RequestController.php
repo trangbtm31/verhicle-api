@@ -53,14 +53,11 @@ class RequestController extends Controller
 		$fcmToken = $request->get('device_token');
 		$deviceId = $request->get('device_id');
 
-		/*$isExistRequest = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->first();
-		if ($isExistRequest) {
-			return $this->error(
-				1,
-				"Transaction is not yet completed",
-				200
-			);
-		}*/
+		$activeRequests = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->get();
+		foreach($activeRequests as $activeRequest) {
+			$activeRequest->status = 0;
+			$activeRequest->save();
+		}
 		$requestInfo->create(
 			[
 				'user_id' => $userId,
