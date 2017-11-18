@@ -54,7 +54,7 @@ class RequestController extends Controller
 		$deviceId = $request->get('device_id');
 
 		$activeRequests = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->get();
-		foreach($activeRequests as $activeRequest) {
+		foreach ($activeRequests as $activeRequest) {
 			$activeRequest->status = 0;
 			$activeRequest->save();
 		}
@@ -88,7 +88,7 @@ class RequestController extends Controller
 				$result,
 				[
 					"user_info" => [
-						"id" => $activeUser->id,
+						"id" => $activeUser->user_id,
 						"phone" => $activeUser->phone,
 						"email" => $activeUser->email,
 						"name" => $activeUser->name,
@@ -201,37 +201,25 @@ class RequestController extends Controller
 	 * @param Request $request
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-	public function acceptRequest(Request $request)
+	public function startTheTrip(Request $request)
 	{
 		$user = $this->user;
 		$senderId = $request->get('sender_id');
 		$receiverId = $user->id;
 		$journey = new Journeys();
 
-		$requestSenderInfo = $this->getOwnerActiveRequest($senderId);
-		$requestReceriverInfo = $this->getOwnerActiveRequest($receiverId);
-
-		if (!$requestSenderInfo or !$requestReceriverInfo) {
-			return $this->error(1, "This user haven't sent any request", 200);
-		}
-		$requestSenderInfo->status = 2;
-		$requestReceriverInfo->status = 2;
-
-		$requestSenderInfo->save();
-		$requestReceriverInfo->save();
+		$senderInfo = $this->getUserRequest($senderId, null, 2);
+		$receiverInfo = $this->getUserRequest($receiverId, null, 2);
 
 		$journey->create(
 			[
 				'sender_id' => $senderId,
 				'receiver_id' => $receiverId,
-				'request_sender_id' => $requestSenderInfo->id,
-				'request_receiver_id' => $requestReceriverInfo->id,
+				'request_sender_id' => $senderInfo->id,
+				'request_receiver_id' => $receiverInfo->id,
 				'status' => 1,
 			]
 		);
-
-		$senderInfo = $this->getUserRequest($senderId, null, 2);
-		$receiverInfo = $this->getUserRequest($receiverId, null, 2);
 
 		$result = array(
 			"start_time" => date('Y-m-d H:i:s', time()),
@@ -281,6 +269,76 @@ class RequestController extends Controller
 
 	public function confirmRequest(Request $request)
 	{
+		$user = $this->user;
+		$senderId = $request->get('sender_id');
+		$receiverId = $user->id;
+		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
+
+		$requestSenderInfo = $this->getOwnerActiveRequest($senderId);
+		$requestReceriverInfo = $this->getOwnerActiveRequest($receiverId);
+
+		if (!$requestSenderInfo or !$requestReceriverInfo) {
+			return $this->error(1, "This user haven't sent any request", 200);
+		}
+		$requestSenderInfo->status = $confirmId;
+		$requestReceriverInfo->status = $confirmId;
+
+		$requestSenderInfo->save();
+		$requestReceriverInfo->save();
+
+		if ($confirmId == 2) {
+			$senderInfo = $this->getUserRequest($senderId, null, 2);
+			$receiverInfo = $this->getUserRequest($receiverId, null, 2);
+
+			$result = array(
+				[
+					"success" => [
+						"sender" => [
+							"user_info" => [
+								"id" => $senderInfo->user_id,
+								"phone" => $senderInfo->phone,
+								"email" => $senderInfo->email,
+								"name" => $senderInfo->name,
+								"address" => $senderInfo->address,
+								"gender" => $senderInfo->gender,
+								"birthday" => $senderInfo->birthday,
+								"avatar_link" => $senderInfo->avatar_link,
+							],
+							"request_info" => [
+								"vehicle_type" => $senderInfo->vehicle_type,
+								"source_location" => json_decode($senderInfo->source_location),
+								"dest_location" => json_decode($senderInfo->destination_location),
+							],
+						],
+						"receiver" => [
+							"user_info" => [
+								"id" => $receiverInfo->user_id,
+								"phone" => $receiverInfo->phone,
+								"email" => $receiverInfo->email,
+								"name" => $receiverInfo->name,
+								"address" => $receiverInfo->address,
+								"gender" => $receiverInfo->gender,
+								"birthday" => $receiverInfo->birthday,
+								"avatar_link" => $receiverInfo->avatar_link,
+							],
+							"request_info" => [
+								"vehicle_type" => $receiverInfo->vehicle_type,
+								"source_location" => json_decode($receiverInfo->source_location),
+								"dest_location" => json_decode($receiverInfo->destination_location),
+							],
+						],
+					],
+				],
+			);
+		} else {
+			$result = "deny";
+		}
+
+		return $this->success(
+			200,
+			"confirm_status",
+			$result
+		);
 
 	}
 
@@ -309,7 +367,6 @@ class RequestController extends Controller
 
 		$userRequest = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
 			->select(
-				'users.id',
 				'users.phone',
 				'users.email',
 				'users.name',
@@ -317,6 +374,8 @@ class RequestController extends Controller
 				'users.gender',
 				'users.birthday',
 				'users.avatar_link',
+				'requests.id',
+				'requests.user_id',
 				'requests.vehicle_type',
 				'requests.source_location',
 				'requests.destination_location',
