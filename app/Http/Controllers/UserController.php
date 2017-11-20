@@ -144,7 +144,13 @@ class UserController extends Controller
      */
 	public function show(Request $request)
 	{
-		$user = $request->user();
+	    $userId = $request->get('user_id');
+	    if(isset($userId)) {
+	        $user = new User();
+	        $user = $user->find($request->get('user_id'));
+        } else {
+            $user = $request->user();
+        }
 		if (!$user) {
 			return $this->error(1, "This user with doesn't exist", 200);
 		}
