@@ -270,12 +270,13 @@ class RequestController extends Controller
 	public function confirmRequest(Request $request)
 	{
 		$user = $this->user;
+		$requests = new Requests();
 		$senderId = $request->get('sender_id');
 		$receiverId = $user->id;
 		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
 
-		$requestSenderInfo = $this->getOwnerActiveRequest($senderId);
-		$requestReceriverInfo = $this->getOwnerActiveRequest($receiverId);
+		$requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 1)->first();
+		$requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->first();
 
 		if (!$requestSenderInfo or !$requestReceriverInfo) {
 			return $this->error(1, "This user haven't sent any request", 200);
@@ -346,14 +347,14 @@ class RequestController extends Controller
 	 * @param $userId
 	 * @return \Illuminate\Database\Eloquent\Model|null|static
 	 */
-	private function getOwnerActiveRequest($userId)
+	/*private function getOwnerActiveRequest($userId)
 	{
 		$requests = new Requests();
 
 		$result = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
 
 		return $result;
-	}
+	}*/
 
 	/**
 	 * @param $userId

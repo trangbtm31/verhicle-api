@@ -23,6 +23,10 @@ class UserController extends Controller
 		return $this->success(200);
 	}
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 	public function register(Request $request)
 	{
 		$user = new User();
@@ -54,6 +58,10 @@ class UserController extends Controller
 		}
 	}
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 	public function signin(Request $request)
 	{
 		$userId = User::verify($request->get('phone'), $request->get('password'));
@@ -110,6 +118,10 @@ class UserController extends Controller
 
 	}
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 	public function signOut(Request $request)
 	{
 		$user = $request->user();
@@ -126,6 +138,10 @@ class UserController extends Controller
 		return $this->success(200);
 	}
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 	public function show(Request $request)
 	{
 		$user = $request->user();
@@ -136,6 +152,10 @@ class UserController extends Controller
 		return $this->success(200, 'user_info', $user);
 	}
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 	public function update(Request $request)
 	{
 		$user = $request->user();
@@ -185,6 +205,9 @@ class UserController extends Controller
 		return $this->success("The user with with id {$id} has been deleted", 200);
 	}
 
+    /**
+     * @param Request $request
+     */
 	public function validateRequest(Request $request)
 	{
 
