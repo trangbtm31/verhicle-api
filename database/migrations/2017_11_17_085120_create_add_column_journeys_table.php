@@ -16,6 +16,8 @@ class CreateAddColumnJourneysTable extends Migration
         Schema::table('journeys', function (Blueprint $table) {
             // Add column Delete Date
             $table->dateTime('delete_at')->nullable();
+            $table->dateTime('finish_at')->nullable();
+            $table->integer('user_delete_id')->nullable();
             $table->float('rating_value')->nullable();
         });
     }
@@ -31,6 +33,8 @@ class CreateAddColumnJourneysTable extends Migration
             //
             $table->dropColumn('delete_at');
             $table->dropColumn('rating_value');
+            $table->dropColumn('finish_at');
+            $table->dropColumn('user_delete_id');
         });
     }
 }

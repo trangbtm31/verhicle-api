@@ -18,8 +18,8 @@ class CreateJourneysTable extends Migration
             $table->increments('id');
             $table->integer('request_id_needer')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
             $table->integer('user_id_needer')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('request_id_graber')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('user_id_graber')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('request_id_grabber')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('user_id_grabber')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->tinyInteger('status');
             $table->integer('sender_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

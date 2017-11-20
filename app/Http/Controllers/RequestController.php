@@ -204,59 +204,21 @@ class RequestController extends Controller
 	public function startTheTrip(Request $request)
 	{
 		$user = $this->user;
-		$senderId = $request->get('sender_id');
-		$receiverId = $user->id;
+		$neederId = $user->id;
 		$journey = new Journeys();
 
-		$senderInfo = $this->getUserRequest($senderId, null, 2);
-		$receiverInfo = $this->getUserRequest($receiverId, null, 2);
+		// Get info of pending journey.
+		$journeyInfo = $journey
+            ->where('user_id_needer', '=', $neederId)
+            ->where('status','=','1')->first();
 
-		$journey->create(
-			[
-				'sender_id' => $senderId,
-				'receiver_id' => $receiverId,
-				'request_sender_id' => $senderInfo->id,
-				'request_receiver_id' => $receiverInfo->id,
-				'status' => 1,
-			]
-		);
+		$journeyInfo->status = 2; // Change status to started.
+
+        $journeyInfo->save();
 
 		$result = array(
 			"start_time" => date('Y-m-d H:i:s', time()),
-			"sender" => [
-				"user_info" => [
-					"id" => $senderInfo->id,
-					"phone" => $senderInfo->phone,
-					"email" => $senderInfo->email,
-					"name" => $senderInfo->name,
-					"address" => $senderInfo->address,
-					"gender" => $senderInfo->gender,
-					"birthday" => $senderInfo->birthday,
-					"avatar_link" => $senderInfo->avatar_link,
-				],
-				"request_info" => [
-					"vehicle_type" => $senderInfo->vehicle_type,
-					"source_location" => json_decode($senderInfo->source_location),
-					"dest_location" => json_decode($senderInfo->destination_location),
-				],
-			],
-			"receiver" => [
-				"user_info" => [
-					"id" => $receiverInfo->id,
-					"phone" => $receiverInfo->phone,
-					"email" => $receiverInfo->email,
-					"name" => $receiverInfo->name,
-					"address" => $receiverInfo->address,
-					"gender" => $receiverInfo->gender,
-					"birthday" => $receiverInfo->birthday,
-					"avatar_link" => $receiverInfo->avatar_link,
-				],
-				"request_info" => [
-					"vehicle_type" => $receiverInfo->vehicle_type,
-					"source_location" => json_decode($receiverInfo->source_location),
-					"dest_location" => json_decode($receiverInfo->destination_location),
-				],
-			],
+			"detail" => $journeyInfo
 		);
 
 		return $this->success(
@@ -271,6 +233,7 @@ class RequestController extends Controller
 	{
 		$user = $this->user;
 		$requests = new Requests();
+        $journey = new Journeys();
 		$senderId = $request->get('sender_id');
 		$receiverId = $user->id;
 		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
@@ -281,6 +244,9 @@ class RequestController extends Controller
 		if (!$requestSenderInfo or !$requestReceriverInfo) {
 			return $this->error(1, "This user haven't sent any request", 200);
 		}
+
+		// Change request status to 1 (available) if user delete request
+        // Change request status to 2 (pending) if user accept request
 		$requestSenderInfo->status = $confirmId;
 		$requestReceriverInfo->status = $confirmId;
 
@@ -290,6 +256,29 @@ class RequestController extends Controller
 		if ($confirmId == 2) {
 			$senderInfo = $this->getUserRequest($senderId, null, 2);
 			$receiverInfo = $this->getUserRequest($receiverId, null, 2);
+
+			if($senderInfo->vehicle_type == 0) {
+			    $neederId = $senderInfo->user_id;
+			    $grabberId = $receiverInfo->user_id;
+                $neederRequestId = $senderInfo->id;
+                $grabberRequestId = $receiverInfo->id;
+            } else {
+                $grabberId = $senderInfo->user_id;
+                $neederId = $receiverInfo->user_id;
+                $neederRequestId = $receiverInfo->id;
+                $grabberRequestId = $senderInfo->id;
+            }
+
+            $journey->create(
+                [
+                    'sender_id' => $senderId,
+                    'user_id_needer' => $neederId,
+                    'request_id_needer' => $neederRequestId,
+                    'request_id_grabber' => $grabberRequestId,
+                    'user_id_grabber' => $grabberId,
+                    'status' => 1, // Is pending for starting the trip
+                ]
+            );
 
 			$result = array(
 				[

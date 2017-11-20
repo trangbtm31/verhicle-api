@@ -37,6 +37,9 @@ $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     $app->post('/confirm-request', 'RequestController@confirmRequest');
     $app->post('/cancel-request', 'RequestController@cancelRequest');
 
+    //Journey
+    $app->post('/start-the-trip', 'RequestController@startTheTrip');
+
     //Rating
     $app->post('/rating','RatingController@doVote');
 });
