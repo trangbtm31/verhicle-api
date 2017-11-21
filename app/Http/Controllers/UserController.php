@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\DeviceInfo;
 use App\User;
 use App\Requests;
 
@@ -67,9 +68,23 @@ class UserController extends Controller
 		$userId = User::verify($request->get('phone'), $request->get('password'));
 		if ($userId) {
 			$userInfo = new User();
+			$deviceInfo = new DeviceInfo();
 			$cancelRequest = Requests::cancelRequest($userId);
+            $deviceId = $request->get('device_id');
 
 			$isActiveUser = $userInfo->where('phone', $request->get('phone'))->first();
+            $isExistDeviceId = $deviceInfo->where('user_id', '=', $userId)->first();
+            if (!$isExistDeviceId) {
+                $deviceInfo->create(
+                    [
+                        'user_id' => $userId,
+                        'device_id' => $deviceId,
+                    ]
+                );
+            } elseif(empty($isExistDeviceId->device_id)) {
+                $isExistDeviceId->device_id = $deviceId;
+                $isExistDeviceId->save();
+            }
 			if (!empty($isActiveUser->api_token)) {
 				return $this->success(
 					200,
