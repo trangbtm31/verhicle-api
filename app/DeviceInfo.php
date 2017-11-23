@@ -50,7 +50,7 @@ class DeviceInfo extends Model
         $isSentSuccess = $downstreamResponse->numberSuccess();
 
         return [
-            "data" => $dataBuild->toArray(),
+            "request-data" => $dataBuild->toArray(),
             "success" => $isSentSuccess
         ];
     }

@@ -100,7 +100,7 @@ class RequestController extends Controller
             $userActiveDistance = $this->getDistance($activeLat1, $activeLng1, $activeLat2, $activeLng2, 'M');
             $startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
             $destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
-            if ($startDistance <= 500 && $destinationDistance <= 500) {
+            if ($startDistance <= 5000 && $destinationDistance <= 5000) {
                 array_push(
                     $result,
                     [
@@ -154,15 +154,17 @@ class RequestController extends Controller
         }
 
         $data = [
-            'type' => 'send_request',
-            'user_id' => $userId,
-            'user_name' => $userRequest->name,
-            'start_location' => $userRequest->source_location,
-            'end_location' => $userRequest->destination_location,
-            'avatar_link' => $userRequest->avatar_link,
-            'start_time' => $userRequest->time_start,
-            'vehicle_type' => $userRequest->vehicle_type,
-            'note' => $request->get('note'),
+            'data' => [
+                'type' => 'send_request',
+                'user_id' => $userId,
+                'user_name' => $userRequest->name,
+                'start_location' => $userRequest->source_location,
+                'end_location' => $userRequest->destination_location,
+                'avatar_link' => $userRequest->avatar_link,
+                'start_time' => $userRequest->time_start,
+                'vehicle_type' => $userRequest->vehicle_type,
+                'note' => $request->get('note'),
+            ]
         ];
 
         $result = $deviceInfo->pushNotification('You have a request!', 'Hey, would you like to go together?', $request->get('receiver_id'), $data);
@@ -269,15 +271,17 @@ class RequestController extends Controller
             $receiverInfo = $this->getUserRequest($receiverId, null, 2);
 
             $data = [
-                'type' => 'confirm_request',
-                'status' => 'Accepted',
-                'user_id' => $receiverInfo->user_id,
-                'user_name' => $receiverInfo->name,
-                'start_location' => $receiverInfo->source_location,
-                'end_location' => $receiverInfo->destination_location,
-                'avatar_link' => $receiverInfo->avatar_link,
-                'start_time' => $receiverInfo->time_start,
-                'vehicle_type' => $receiverInfo->vehicle_type,
+                'data' => [
+                    'type' => 'confirm_request',
+                    'status' => 'Accepted',
+                    'user_id' => $receiverInfo->user_id,
+                    'user_name' => $receiverInfo->name,
+                    'start_location' => $receiverInfo->source_location,
+                    'end_location' => $receiverInfo->destination_location,
+                    'avatar_link' => $receiverInfo->avatar_link,
+                    'start_time' => $receiverInfo->time_start,
+                    'vehicle_type' => $receiverInfo->vehicle_type,
+                ]
             ];
 
             $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!', 'This user has accepted your request!', $senderId, $data);
@@ -423,6 +427,14 @@ class RequestController extends Controller
         return json_decode($result);
     }
 
+    /**
+     * @param $lat1
+     * @param $lng1
+     * @param $lat2
+     * @param $lng2
+     * @param $unit
+     * @return float
+     */
     private function getDistance($lat1, $lng1, $lat2, $lng2, $unit) {
         $theta = $lng1 - $lng2;
         $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
