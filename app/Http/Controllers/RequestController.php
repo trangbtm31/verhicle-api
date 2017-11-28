@@ -22,431 +22,482 @@ use Illuminate\Http\Request;
 
 class RequestController extends Controller
 {
-    /**
-     * @var user
-     */
+	/**
+	 * @var user
+	 */
 
-    protected $user;
+	protected $user;
 
-    /**
-     * RequestController constructor.
-     * @param Request $request
-     */
-    public function __construct(Request $request)
-    {
+	/**
+	 * RequestController constructor.
+	 * @param Request $request
+	 */
+	public function __construct(Request $request)
+	{
 
-        $this->user = $request->user();
-    }
+		$this->user = $request->user();
+	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function pushInfomation(Request $request)
-    {
-        $requestInfo = new Requests();
-        $fcmService = new DeviceInfo();
-        $user = $request->user();
-        $result = array();
-        $vehicleType = $request->get('vehicle_type');
-        $userId = $user->id;
-        $fcmToken = $request->get('device_token');
-        $srcLocation = $request->get('source_location');
-        $desLocation = $request->get('destination_location');
-        $lat1 = json_decode($srcLocation)->lat;
-        $lng1 = json_decode($srcLocation)->lng;
-        $lat2 = json_decode($desLocation)->lat;
-        $lng2 = json_decode($desLocation)->lng;
-        $userDistance = $this->getDistance($lat1, $lng1, $lat2, $lng2, 'M');
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function pushInfomation(Request $request)
+	{
+		$requestInfo = new Requests();
+		$fcmService = new DeviceInfo();
+		$user = $request->user();
+		$result = array();
+		$vehicleType = $request->get('vehicle_type');
+		$userId = $user->id;
+		$fcmToken = $request->get('device_token');
+		$srcLocation = $request->get('source_location');
+		$desLocation = $request->get('destination_location');
+		$lat1 = json_decode($srcLocation)->lat;
+		$lng1 = json_decode($srcLocation)->lng;
+		$lat2 = json_decode($desLocation)->lat;
+		$lng2 = json_decode($desLocation)->lng;
+		$userDistance = $this->getDistance($lat1, $lng1, $lat2, $lng2, 'M');
 
-        $activeRequests = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->get();
-        foreach ($activeRequests as $activeRequest) {
-            $activeRequest->status = 0;
-            $activeRequest->save();
-        }
-        $requestInfo->create(
-            [
-                'user_id' => $userId,
-                'source_location' => $srcLocation,
-                'destination_location' => $request->get('destination_location'),
-                'time_start' => date("h:i", strtotime($request->get('time_start'))),
-                'vehicle_type' => $vehicleType,
-                'status' => 1,
-            ]
-        );
+		$activeRequests = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->get();
+		foreach ($activeRequests as $activeRequest) {
+			$activeRequest->status = 0;
+			$activeRequest->save();
+		}
+		$requestInfo->create(
+			[
+				'user_id' => $userId,
+				'source_location' => $srcLocation,
+				'destination_location' => $request->get('destination_location'),
+				'time_start' => date("h:i", strtotime($request->get('time_start'))),
+				'vehicle_type' => $vehicleType,
+				'status' => 1,
+			]
+		);
 
-        // Check if this device info hasn't saved yet
-        $isExistUser = $fcmService->where('user_id', '=', $userId)->first();
-        if (!$isExistUser) {
-            $fcmService->create(
-                [
-                    'user_id' => $userId,
-                    'token' => $fcmToken,
-                ]
-            );
-        } elseif ($isExistUser && $isExistUser->token != $fcmToken) {
-            $isExistUser->token = $fcmToken;
-            $isExistUser->save();
-        }
-        $activeUsers = $this->getUserRequest($userId, $vehicleType);
+		// Check if this device info hasn't saved yet
+		$isExistUser = $fcmService->where('user_id', '=', $userId)->first();
+		if (!$isExistUser) {
+			$fcmService->create(
+				[
+					'user_id' => $userId,
+					'token' => $fcmToken,
+				]
+			);
+		} elseif ($isExistUser && $isExistUser->token != $fcmToken) {
+			$isExistUser->token = $fcmToken;
+			$isExistUser->save();
+		}
+		$activeUsers = $this->getUserRequest($userId, $vehicleType);
 
-        foreach ($activeUsers as $activeUser) {
-            $srcLocation = json_decode($activeUser->source_location);
-            $desLocation = json_decode($activeUser->destination_location);
-            $activeLat1 = $srcLocation->lat;
-            $activeLng1 = $srcLocation->lng;
-            $activeLat2 = $desLocation->lat;
-            $activeLng2 = $desLocation->lng;
-            $userActiveDistance = $this->getDistance($activeLat1, $activeLng1, $activeLat2, $activeLng2, 'M');
-            $startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
-            $destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
-            if ($startDistance <= 5000 && $destinationDistance <= 5000) {
-                array_push(
-                    $result,
-                    [
-                        "user_info" => [
-                            "id" => $activeUser->user_id,
-                            "phone" => $activeUser->phone,
-                            "email" => $activeUser->email,
-                            "name" => $activeUser->name,
-                            "address" => $activeUser->address,
-                            "gender" => $activeUser->gender,
-                            "birthday" => $activeUser->birthday,
-                            "avatar_link" => $activeUser->avatar_link,
-                        ],
-                        "request_info" => [
-                            "vehicle_type" => $activeUser->vehicle_type,
-                            "source_location" => $srcLocation,
-                            "dest_location" => $desLocation,
-                            "time_start" => $activeUser->time_start,
-                        ],
-                    ]
-                );
-            }
-        }
+		foreach ($activeUsers as $activeUser) {
+			$srcLocation = json_decode($activeUser->source_location);
+			$desLocation = json_decode($activeUser->destination_location);
+			$activeLat1 = $srcLocation->lat;
+			$activeLng1 = $srcLocation->lng;
+			$activeLat2 = $desLocation->lat;
+			$activeLng2 = $desLocation->lng;
+			$userActiveDistance = $this->getDistance($activeLat1, $activeLng1, $activeLat2, $activeLng2, 'M');
+			$startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
+			$destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
+			if ($startDistance <= 5000 && $destinationDistance <= 5000) {
+				array_push(
+					$result,
+					[
+						"user_info" => [
+							"id" => $activeUser->user_id,
+							"phone" => $activeUser->phone,
+							"email" => $activeUser->email,
+							"name" => $activeUser->name,
+							"address" => $activeUser->address,
+							"gender" => $activeUser->gender,
+							"birthday" => $activeUser->birthday,
+							"avatar_link" => $activeUser->avatar_link,
+						],
+						"request_info" => [
+							"vehicle_type" => $activeUser->vehicle_type,
+							"source_location" => $srcLocation,
+							"dest_location" => $desLocation,
+							"time_start" => $activeUser->time_start,
+						],
+					]
+				);
+			}
+		}
 
-        return $this->success(
-            200,
-            "active_users",
-            $result
-        );
+		return $this->success(
+			200,
+			"active_users",
+			$result
+		);
 
-    }
+	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     * @throws \LaravelFCM\Message\InvalidOptionException
-     */
-    public function sendRequestToAnotherOne(Request $request)
-    {
-        $deviceInfo = new DeviceInfo();
-        $user = $this->user;
-        $userId = $user->id;
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 * @throws \LaravelFCM\Message\InvalidOptionException
+	 */
+	public function sendRequestToAnotherOne(Request $request)
+	{
+		$deviceInfo = new DeviceInfo();
+		$user = $this->user;
+		$userId = $user->id;
 
-        $userRequest = $this->getUserRequest($userId);
-        if (!$userRequest) {
-            return $this->error(
-                1,
-                "You haven't post any request yet !",
-                200
-            );
-        }
+		$userRequest = $this->getUserRequest($userId);
+		if (!$userRequest) {
+			return $this->error(
+				1,
+				"You haven't post any request yet !",
+				200
+			);
+		}
 
-        $data = [
-            'data' => [
-                'type' => 'send_request',
-                'user_id' => $userId,
-                'user_name' => $userRequest->name,
-                'start_location' => json_decode($userRequest->source_location),
-                'end_location' => json_decode($userRequest->destination_location),
-                'avatar_link' => $userRequest->avatar_link,
-                'start_time' => $userRequest->time_start,
-                'vehicle_type' => $userRequest->vehicle_type,
-                'note' => $request->get('note'),
-            ]
-        ];
+		$data = [
+			'data' => [
+				'type' => 'send_request',
+				'user_id' => $userId,
+				'user_name' => $userRequest->name,
+				'start_location' => json_decode($userRequest->source_location),
+				'end_location' => json_decode($userRequest->destination_location),
+				'avatar_link' => $userRequest->avatar_link,
+				'start_time' => $userRequest->time_start,
+				'vehicle_type' => $userRequest->vehicle_type,
+				'note' => $request->get('note'),
+			],
+		];
 
-        $result = $deviceInfo->pushNotification('You have a request!', 'Hey, would you like to go together?', $request->get('receiver_id'), $data);
+		$result = $deviceInfo->pushNotification(
+			'You have a request!',
+			'Hey, would you like to go together?',
+			$request->get('receiver_id'),
+			$data
+		);
 
-        /*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
-        if ($isSentSusscess) {
-            $requestInfo->status = 2; // This request owner has sent request to another user.
-            $requestInfo->save();
-        }*/
+		/*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+		if ($isSentSusscess) {
+			$requestInfo->status = 2; // This request owner has sent request to another user.
+			$requestInfo->save();
+		}*/
 
-        return $this->success(
-            200,
-            "send_request_info",
-            $result
-        );
+		return $this->success(
+			200,
+			"send_request_info",
+			$result
+		);
 
-    }
+	}
 
-    /**
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function cancelRequest()
-    {
-        $user = $this->user;
-        $cancel = Requests::cancelRequest($user->id);
-        if ($cancel) {
-            return $this->success(200);
-        } else {
-            return $this->error(1, "You haven't sent any request", 200);
-        }
-    }
+	/**
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function cancelRequest()
+	{
+		$user = $this->user;
+		$cancel = Requests::cancelRequest($user->id);
+		if ($cancel) {
+			return $this->success(200);
+		} else {
+			return $this->error(1, "You haven't sent any request", 200);
+		}
+	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function startTheTrip(Request $request)
-    {
-        $user = $this->user;
-        $neederId = $user->id;
-        $journey = new Journeys();
-        $deviceInfo = new DeviceInfo();
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function startTheTrip(Request $request)
+	{
+		$user = $this->user;
+		$neederId = $user->id;
+		$journey = new Journeys();
+		$deviceInfo = new DeviceInfo();
 
-        // Get info of pending journey.
-        $journeyInfo = $journey
-            ->where('user_id_needer', '=', $neederId)
-            ->where('status', '=', '1')->first();
+		// Get info of pending journey.
+		$journeyInfo = $journey
+			->where('user_id_needer', '=', $neederId)
+			->where('status', '=', '1')->first();
 
-        $journeyInfo->status = 2; // Change status to started.
+		$journeyInfo->status = 2; // Change status to started.
 
-        $data = [
-            'type' => 'start_the_trip',
-            "start_time" => date('Y-m-d H:i:s', time())
-        ];
-        $notifyInfo = $deviceInfo->pushNotification('Start the trip!', 'Let\'s start!', $journeyInfo->user_id_grabber, $data);
+		$data = [
+			'journey_id' => $journeyInfo['id'],
+			'type' => 'start_the_trip',
+			"start_time" => date('Y-m-d H:i:s', time()),
+		];
+		$notifyInfo = $deviceInfo->pushNotification(
+			'Start the trip!',
+			'Let\'s start!',
+			$journeyInfo->user_id_grabber,
+			$data
+		);
 
-        $journeyInfo->save();
+		$journeyInfo->save();
 
-        $result = array(
-            "start_time" => date('Y-m-d H:i:s', time()),
-            "detail" => $journeyInfo,
-            "notification_info" => $notifyInfo
-        );
+		$result = array(
+			"start_time" => date('Y-m-d H:i:s', time()),
+			"detail" => $journeyInfo,
+			"notification_info" => $notifyInfo,
+		);
 
-        return $this->success(
-            200,
-            "journey_info",
-            $result
-        );
+		return $this->success(
+			200,
+			"journey_info",
+			$result
+		);
 
-    }
+	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function confirmRequest(Request $request)
-    {
-        $deviceInfo = new DeviceInfo();
-        $user = $this->user;
-        $requests = new Requests();
-        $journey = new Journeys();
-        $senderId = $request->get('sender_id');
-        $receiverId = $user->id;
-        $confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function endTheTrip(Request $request)
+	{
+		$journeys = new Journeys();
+		$journeyId = $request->get('journey_id');
 
-        $requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 1)->first();
-        $requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->first();
+		$activeJourney = $journeys->where('id', '=', $journeyId)->first();
 
-        if (!$requestSenderInfo or !$requestReceriverInfo) {
-            return $this->error(1, "This user haven't sent any request", 200);
-        }
+		if ($activeJourney->id != 1) {
+			return $this->error(1, "This journey is not started", 200);
+		}
 
-        // Change request status to 1 (available) if user delete request
-        // Change request status to 2 (pending) if user accept request
-        $requestSenderInfo->status = $confirmId;
-        $requestReceriverInfo->status = $confirmId;
+		$activeJourney->status = 2; // The journey is finished
+		$activeJourney->finish_date = date('Y-m-d H:i:s', time());
 
-        $requestSenderInfo->save();
-        $requestReceriverInfo->save();
+		$activeJourney->save();
 
-        if ($confirmId == 2) {
-            $senderInfo = $this->getUserRequest($senderId, null, 2);
-            $receiverInfo = $this->getUserRequest($receiverId, null, 2);
+		return $this->success(200);
+	}
 
-            $data = [
-                'data' => [
-                    'type' => 'confirm_request',
-                    'status' => 'Accepted',
-                    'user_id' => $receiverInfo->user_id,
-                    'user_name' => $receiverInfo->name,
-                    'start_location' => json_decode($receiverInfo->source_location),
-                    'end_location' => json_decode($receiverInfo->destination_location),
-                    'avatar_link' => $receiverInfo->avatar_link,
-                    'start_time' => $receiverInfo->time_start,
-                    'vehicle_type' => $receiverInfo->vehicle_type,
-                ]
-            ];
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function confirmRequest(Request $request)
+	{
+		$deviceInfo = new DeviceInfo();
+		$user = $this->user;
+		$requests = new Requests();
+		$journey = new Journeys();
+		$senderId = $request->get('sender_id');
+		$receiverId = $user->id;
+		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
 
-            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!', 'This user has accepted your request!', $senderId, $data);
+		$requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 1)->first();
+		$requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->first();
 
-            if ($senderInfo->vehicle_type == 0) {
-                $neederId = $senderInfo->user_id;
-                $grabberId = $receiverInfo->user_id;
-                $neederRequestId = $senderInfo->id;
-                $grabberRequestId = $receiverInfo->id;
-            } else {
-                $grabberId = $senderInfo->user_id;
-                $neederId = $receiverInfo->user_id;
-                $neederRequestId = $receiverInfo->id;
-                $grabberRequestId = $senderInfo->id;
-            }
+		if (!$requestSenderInfo or !$requestReceriverInfo) {
+			return $this->error(1, "This user haven't sent any request", 200);
+		}
 
-            $journey->create(
-                [
-                    'sender_id' => $senderId,
-                    'user_id_needer' => $neederId,
-                    'request_id_needer' => $neederRequestId,
-                    'request_id_grabber' => $grabberRequestId,
-                    'user_id_grabber' => $grabberId,
-                    'status' => 1, // Is pending for starting the trip
-                ]
-            );
+		// Change request status to 1 (available) if user delete request
+		// Change request status to 2 (pending) if user accept request
+		$requestSenderInfo->status = $confirmId;
+		$requestReceriverInfo->status = $confirmId;
 
-            $result = array(
-                [
-                    "status" => "success",
-                    "sender" => [
-                        "user_info" => [
-                            "id" => $senderInfo->user_id,
-                            "phone" => $senderInfo->phone,
-                            "email" => $senderInfo->email,
-                            "name" => $senderInfo->name,
-                            "address" => $senderInfo->address,
-                            "gender" => $senderInfo->gender,
-                            "birthday" => $senderInfo->birthday,
-                            "avatar_link" => $senderInfo->avatar_link,
-                        ],
-                        "request_info" => [
-                            "vehicle_type" => $senderInfo->vehicle_type,
-                            "source_location" => json_decode($senderInfo->source_location),
-                            "dest_location" => json_decode($senderInfo->destination_location),
-                        ],
-                    ],
-                    "receiver" => [
-                        "user_info" => [
-                            "id" => $receiverInfo->user_id,
-                            "phone" => $receiverInfo->phone,
-                            "email" => $receiverInfo->email,
-                            "name" => $receiverInfo->name,
-                            "address" => $receiverInfo->address,
-                            "gender" => $receiverInfo->gender,
-                            "birthday" => $receiverInfo->birthday,
-                            "avatar_link" => $receiverInfo->avatar_link,
-                        ],
-                        "request_info" => [
-                            "vehicle_type" => $receiverInfo->vehicle_type,
-                            "source_location" => json_decode($receiverInfo->source_location),
-                            "dest_location" => json_decode($receiverInfo->destination_location),
-                        ],
-                    ],
-                    "request_info" => $receiverResponseInfo
-                ]
-            );
-        } else {
-            $data = [
-                'type' => 'confirm_request',
-                'status' => 'deny'
-            ];
-            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!', 'This user has canceled your request!', $senderId, $data);
-            $result = array([
-                "status" => "deny",
-                "request_info" => $receiverResponseInfo
-            ]);
-        }
+		$requestSenderInfo->save();
+		$requestReceriverInfo->save();
 
-        return $this->success(
-            200,
-            "confirm_status",
-            $result
-        );
+		if ($confirmId == 2) {
+			$senderInfo = $this->getUserRequest($senderId, null, 2);
+			$receiverInfo = $this->getUserRequest($receiverId, null, 2);
 
-    }
+			$data = [
+				'data' => [
+					'type' => 'confirm_request',
+					'status' => 'Accepted',
+					'user_id' => $receiverInfo->user_id,
+					'user_name' => $receiverInfo->name,
+					'start_location' => json_decode($receiverInfo->source_location),
+					'end_location' => json_decode($receiverInfo->destination_location),
+					'avatar_link' => $receiverInfo->avatar_link,
+					'start_time' => $receiverInfo->time_start,
+					'vehicle_type' => $receiverInfo->vehicle_type,
+				],
+			];
 
-    /**
-     * @param $userId
-     * @return \Illuminate\Database\Eloquent\Model|null|static
-     */
-    /*private function getOwnerActiveRequest($userId)
-    {
-        $requests = new Requests();
+			$receiverResponseInfo = $deviceInfo->pushNotification(
+				'You have a response!',
+				'This user has accepted your request!',
+				$senderId,
+				$data
+			);
 
-        $result = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+			if ($senderInfo->vehicle_type == 0) {
+				$neederId = $senderInfo->user_id;
+				$grabberId = $receiverInfo->user_id;
+				$neederRequestId = $senderInfo->id;
+				$grabberRequestId = $receiverInfo->id;
+			} else {
+				$grabberId = $senderInfo->user_id;
+				$neederId = $receiverInfo->user_id;
+				$neederRequestId = $receiverInfo->id;
+				$grabberRequestId = $senderInfo->id;
+			}
 
-        return $result;
-    }*/
+			$journey->create(
+				[
+					'sender_id' => $senderId,
+					'user_id_needer' => $neederId,
+					'request_id_needer' => $neederRequestId,
+					'request_id_grabber' => $grabberRequestId,
+					'user_id_grabber' => $grabberId,
+					'status' => 1, // Is pending for starting the trip
+				]
+			);
 
-    /**
-     * @param $userId
-     * @param null $vehicleType
-     * @return mixed
-     *
-     */
-    private function getUserRequest($userId, $vehicleType = null, $status = 1)
-    {
-        $requestInfo = new Requests();
+			$result = array(
+				[
+					"status" => "success",
+					"sender" => [
+						"user_info" => [
+							"id" => $senderInfo->user_id,
+							"phone" => $senderInfo->phone,
+							"email" => $senderInfo->email,
+							"name" => $senderInfo->name,
+							"address" => $senderInfo->address,
+							"gender" => $senderInfo->gender,
+							"birthday" => $senderInfo->birthday,
+							"avatar_link" => $senderInfo->avatar_link,
+						],
+						"request_info" => [
+							"vehicle_type" => $senderInfo->vehicle_type,
+							"source_location" => json_decode($senderInfo->source_location),
+							"dest_location" => json_decode($senderInfo->destination_location),
+						],
+					],
+					"receiver" => [
+						"user_info" => [
+							"id" => $receiverInfo->user_id,
+							"phone" => $receiverInfo->phone,
+							"email" => $receiverInfo->email,
+							"name" => $receiverInfo->name,
+							"address" => $receiverInfo->address,
+							"gender" => $receiverInfo->gender,
+							"birthday" => $receiverInfo->birthday,
+							"avatar_link" => $receiverInfo->avatar_link,
+						],
+						"request_info" => [
+							"vehicle_type" => $receiverInfo->vehicle_type,
+							"source_location" => json_decode($receiverInfo->source_location),
+							"dest_location" => json_decode($receiverInfo->destination_location),
+						],
+					],
+					"request_info" => $receiverResponseInfo,
+				],
+			);
+		} else {
+			$data = [
+				'type' => 'confirm_request',
+				'status' => 'deny',
+			];
+			$receiverResponseInfo = $deviceInfo->pushNotification(
+				'You have a response!',
+				'This user has canceled your request!',
+				$senderId,
+				$data
+			);
+			$result = array(
+				[
+					"status" => "deny",
+					"request_info" => $receiverResponseInfo,
+				],
+			);
+		}
 
-        $userRequest = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
-            ->select(
-                'users.phone',
-                'users.email',
-                'users.name',
-                'users.address',
-                'users.gender',
-                'users.birthday',
-                'users.avatar_link',
-                'requests.id',
-                'requests.user_id',
-                'requests.vehicle_type',
-                'requests.source_location',
-                'requests.destination_location',
-                'requests.time_start'
+		return $this->success(
+			200,
+			"confirm_status",
+			$result
+		);
 
-            );
-        if ($vehicleType != null) {
-            $userList = $userRequest->where('requests.user_id', '!=', $userId);
-            if ($vehicleType == 0) {
-                $result = $userList->where('requests.vehicle_type', '!=', '0')->get();
-            } else {
-                $result = $userList->where('requests.vehicle_type', '=', '0')->get();
-            }
-        } else {
-            $result = $userRequest->where('requests.user_id', '=', $userId)->where(
-                'requests.status',
-                '=',
-                $status
-            )->first();
-        }
+	}
 
-        return json_decode($result);
-    }
+	/**
+	 * @param $userId
+	 * @return \Illuminate\Database\Eloquent\Model|null|static
+	 */
+	/*private function getOwnerActiveRequest($userId)
+	{
+		$requests = new Requests();
 
-    /**
-     * @param $lat1
-     * @param $lng1
-     * @param $lat2
-     * @param $lng2
-     * @param $unit
-     * @return float
-     */
-    private function getDistance($lat1, $lng1, $lat2, $lng2, $unit) {
-        $theta = $lng1 - $lng2;
-        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
-        $dist = acos($dist);
-        $dist = rad2deg($dist);
-        $miles = $dist * 60 * 1.1515;
-        $unit = strtoupper($unit);
+		$result = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
 
-        if ($unit == "M") {
-            return ($miles * 1609.344);
-        } else if ($unit == "N") {
-            return ($miles * 0.8684);
-        }
-    }
+		return $result;
+	}*/
+
+	/**
+	 * @param $userId
+	 * @param null $vehicleType
+	 * @return mixed
+	 *
+	 */
+	private function getUserRequest($userId, $vehicleType = null, $status = 1)
+	{
+		$requestInfo = new Requests();
+
+		$userRequest = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
+			->select(
+				'users.phone',
+				'users.email',
+				'users.name',
+				'users.address',
+				'users.gender',
+				'users.birthday',
+				'users.avatar_link',
+				'requests.id',
+				'requests.user_id',
+				'requests.vehicle_type',
+				'requests.source_location',
+				'requests.destination_location',
+				'requests.time_start'
+
+			);
+		if ($vehicleType != null) {
+			$userList = $userRequest->where('requests.user_id', '!=', $userId);
+			if ($vehicleType == 0) {
+				$result = $userList->where('requests.vehicle_type', '!=', '0')->get();
+			} else {
+				$result = $userList->where('requests.vehicle_type', '=', '0')->get();
+			}
+		} else {
+			$result = $userRequest->where('requests.user_id', '=', $userId)->where(
+				'requests.status',
+				'=',
+				$status
+			)->first();
+		}
+
+		return json_decode($result);
+	}
+
+	/**
+	 * @param $lat1
+	 * @param $lng1
+	 * @param $lat2
+	 * @param $lng2
+	 * @param $unit
+	 * @return float
+	 */
+	private function getDistance($lat1, $lng1, $lat2, $lng2, $unit)
+	{
+		$theta = $lng1 - $lng2;
+		$dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(
+				deg2rad($theta)
+			);
+		$dist = acos($dist);
+		$dist = rad2deg($dist);
+		$miles = $dist * 60 * 1.1515;
+		$unit = strtoupper($unit);
+
+		if ($unit == "M") {
+			return ($miles * 1609.344);
+		} else {
+			if ($unit == "N") {
+				return ($miles * 0.8684);
+			}
+		}
+	}
 }
