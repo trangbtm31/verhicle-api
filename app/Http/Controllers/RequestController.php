@@ -237,19 +237,42 @@ class RequestController extends Controller
 
     }
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function confirmRequest(Request $request)
-    {
-        $deviceInfo = new DeviceInfo();
-        $user = $this->user;
-        $requests = new Requests();
-        $journey = new Journeys();
-        $senderId = $request->get('sender_id');
-        $receiverId = $user->id;
-        $confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function endTheTrip(Request $request)
+	{
+		$journeys = new Journeys();
+		$journeyId = $request->get('journey_id');
+
+		$activeJourney = $journeys->where('id', '=', $journeyId)->first();
+
+		if ($activeJourney->id != 1) {
+			return $this->error(1, "This journey is not started", 200);
+		}
+
+		$activeJourney->status = 2; // The journey is finished
+		$activeJourney->finish_date = date('Y-m-d H:i:s', time());
+
+		$activeJourney->save();
+
+		return $this->success(200);
+	}
+
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function confirmRequest(Request $request)
+	{
+		$deviceInfo = new DeviceInfo();
+		$user = $this->user;
+		$requests = new Requests();
+		$journey = new Journeys();
+		$senderId = $request->get('sender_id');
+		$receiverId = $user->id;
+		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
 
         $requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 1)->first();
         $requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->first();
