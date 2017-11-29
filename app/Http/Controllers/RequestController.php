@@ -273,7 +273,7 @@ class RequestController extends Controller
             $data = [
                 'data' => [
                     'type' => 'confirm_request',
-                    'status' => 'Accepted',
+                    'status' => 'accept',
                     'user_id' => $receiverInfo->user_id,
                     'user_name' => $receiverInfo->name,
                     'start_location' => $receiverInfo->source_location,
