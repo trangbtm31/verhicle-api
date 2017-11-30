@@ -15,7 +15,7 @@ use App\Journeys;
 use Illuminate\Http\Request;
 
 
-class RequestController extends Controller
+class JourneyController extends Controller
 {
     /**
      * @var user
@@ -241,6 +241,7 @@ class RequestController extends Controller
     public function endTheTrip(Request $request)
     {
         $journeys = new Journeys();
+		$deviceInfo = new DeviceInfo();
         $journeyId = $request->get('journey_id');
 
         $activeJourney = $journeys->where('id', '=', $journeyId)->first();
@@ -251,10 +252,26 @@ class RequestController extends Controller
 
         $activeJourney->status = 2; // The journey is finished
         $activeJourney->finish_date = date('Y-m-d H:i:s', time());
+		$data = [
+			'type' => 'end_the_trip',
+			"start_time" => date('Y-m-d H:i:s', time())
+		];
+		$notifyInfo = $deviceInfo->pushNotification(' the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
+			$data);
 
         $activeJourney->save();
 
-        return $this->success(200);
+		$result = array(
+			"start_time" => date('Y-m-d H:i:s', time()),
+			"detail" => $activeJourney,
+			"notification_info" => $notifyInfo
+		);
+
+        return $this->success(
+			200,
+			'end_journey_info'.
+			$result
+		);
     }
 
     /**

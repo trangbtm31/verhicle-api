@@ -32,14 +32,14 @@ $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app)
 // Access Token
 $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     //Request
-    $app->post('/request', 'RequestController@pushInfomation');
-    $app->post('/send-request', 'RequestController@sendRequestToAnotherOne');
-    $app->post('/confirm-request', 'RequestController@confirmRequest');
-    $app->post('/cancel-request', 'RequestController@cancelRequest');
+    $app->post('/request', 'JourneyController@pushInfomation');
+    $app->post('/send-request', 'JourneyController@sendRequestToAnotherOne');
+    $app->post('/confirm-request', 'JourneyController@confirmRequest');
+    $app->post('/cancel-request', 'JourneyController@cancelRequest');
 
     //Journey
-    $app->post('/start-the-trip', 'RequestController@startTheTrip');
-    $app->post('/end-the-trip', 'RequestController@endTheTrip');
+    $app->post('/start-the-trip', 'JourneyController@startTheTrip');
+    $app->post('/end-the-trip', 'JourneyController@endTheTrip');
 
     //Rating
     $app->post('/rating','RatingController@doVote');

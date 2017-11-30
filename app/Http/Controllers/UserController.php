@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DeviceInfo;
+use App\Journeys;
 use App\User;
 use App\Requests;
 
@@ -24,10 +25,10 @@ class UserController extends Controller
 		return $this->success(200);
 	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function register(Request $request)
 	{
 		$user = new User();
@@ -59,10 +60,10 @@ class UserController extends Controller
 		}
 	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function signin(Request $request)
 	{
 		$userId = User::verify($request->get('phone'), $request->get('password'));
@@ -70,21 +71,21 @@ class UserController extends Controller
 			$userInfo = new User();
 			$deviceInfo = new DeviceInfo();
 			$cancelRequest = Requests::cancelRequest($userId);
-            $deviceId = $request->get('device_id');
+			$deviceId = $request->get('device_id');
 
 			$isActiveUser = $userInfo->where('phone', $request->get('phone'))->first();
-            $isExistDeviceId = $deviceInfo->where('user_id', '=', $userId)->first();
-            if (!$isExistDeviceId) {
-                $deviceInfo->create(
-                    [
-                        'user_id' => $userId,
-                        'device_id' => $deviceId,
-                    ]
-                );
-            } elseif(empty($isExistDeviceId->device_id)) {
-                $isExistDeviceId->device_id = $deviceId;
-                $isExistDeviceId->save();
-            }
+			$isExistDeviceId = $deviceInfo->where('user_id', '=', $userId)->first();
+			if (!$isExistDeviceId) {
+				$deviceInfo->create(
+					[
+						'user_id' => $userId,
+						'device_id' => $deviceId,
+					]
+				);
+			} elseif (empty($isExistDeviceId->device_id)) {
+				$isExistDeviceId->device_id = $deviceId;
+				$isExistDeviceId->save();
+			}
 			if (!empty($isActiveUser->api_token)) {
 				return $this->success(
 					200,
@@ -133,10 +134,10 @@ class UserController extends Controller
 
 	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function signOut(Request $request)
 	{
 		$user = $request->user();
@@ -153,19 +154,19 @@ class UserController extends Controller
 		return $this->success(200);
 	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function show(Request $request)
 	{
-	    $userId = $request->get('user_id');
-	    if(isset($userId)) {
-	        $user = new User();
-	        $user = $user->find($request->get('user_id'));
-        } else {
-            $user = $request->user();
-        }
+		$userId = $request->get('user_id');
+		if (isset($userId)) {
+			$user = new User();
+			$user = $user->find($request->get('user_id'));
+		} else {
+			$user = $request->user();
+		}
 		if (!$user) {
 			return $this->error(1, "This user with doesn't exist", 200);
 		}
@@ -173,10 +174,10 @@ class UserController extends Controller
 		return $this->success(200, 'user_info', $user);
 	}
 
-    /**
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
 	public function update(Request $request)
 	{
 		$user = $request->user();
@@ -196,7 +197,7 @@ class UserController extends Controller
 			);
 			foreach ($userFields as $userField) {
 				if (null !== ($request->get($userField))) {
-					if($userField == 'birthday') {
+					if ($userField == 'birthday') {
 						$user->birthday = date('Y-m-d', strtotime($request->get('birthday')));
 					} else {
 						$user->$userField = $request->get($userField);
@@ -210,6 +211,49 @@ class UserController extends Controller
 			return $this->error(1, "This user with haven't logged in", 200);
 
 		}
+	}
+
+	public function getUserHistory(Request $request)
+	{
+		$user = $request->user();
+		$journey = new Journeys();
+		$requests = new Requests();
+
+		$successDriverHistory = $this->getUserTrip($user->id, 2,true);
+		$failDriverHistory = $this->getUserTrip($user->id, 0,true);
+		$successHikerHistory = $this->getUserTrip($user->id, 2, false);
+		$failHikerHistory = $this->getUserTrip($user->id, 0, false);
+
+	}
+
+	private function getUserTrip($userId, $status, $isDriver = true) {
+		$journey = new Journeys();
+		$requests = new Requests();
+
+		$requestsList = array();
+		$result = array();
+		if($isDriver) {
+			$userJourneyList = $journey->where('user_id_grabber', '=', $userId)
+					->where('status', '=', $status)
+					->get();
+			foreach($userJourneyList as $userJourney) {
+				$requestInfo = $requests->find($userJourney->request_id_grabber);
+				$requestsList[] = $requestInfo;
+				$result[] = array('trip_detail' => [
+					'journey'
+				]);
+			}
+
+		} else {
+			$userJourneyList= $journey->where('user_id_needer', '=', $userId)
+				->where('status', '=', $status)
+				->get();
+			foreach($userJourneyList as $userJourney) {
+				$requestInfo = $requests->find($userJourney);
+				$requestsList[] = $requestInfo;
+			}
+		}
+		return json_decode($result);
 	}
 
 	public function destroy($id)
@@ -226,9 +270,9 @@ class UserController extends Controller
 		return $this->success("The user with with id {$id} has been deleted", 200);
 	}
 
-    /**
-     * @param Request $request
-     */
+	/**
+	 * @param Request $request
+	 */
 	public function validateRequest(Request $request)
 	{
 
