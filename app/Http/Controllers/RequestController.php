@@ -11,11 +11,6 @@ namespace App\Http\Controllers;
 use App\DeviceInfo;
 use App\Requests;
 use App\Journeys;
-//use App\FCMService;
-use LaravelFCM\Message\OptionsBuilder;
-use LaravelFCM\Message\PayloadDataBuilder;
-use LaravelFCM\Message\PayloadNotificationBuilder;
-use FCM;
 
 use Illuminate\Http\Request;
 
@@ -167,7 +162,8 @@ class RequestController extends Controller
             ]
         ];
 
-        $result = $deviceInfo->pushNotification('You have a request!', 'Hey, would you like to go together?', $request->get('receiver_id'), $data);
+        $result = $deviceInfo->pushNotification('You have a request!', 'Hey, would you like to go together?',
+            $request->get('receiver_id'), $data);
 
         /*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
         if ($isSentSusscess) {
@@ -219,7 +215,8 @@ class RequestController extends Controller
             'type' => 'start_the_trip',
             "start_time" => date('Y-m-d H:i:s', time())
         ];
-        $notifyInfo = $deviceInfo->pushNotification('Start the trip!', 'Let\'s start!', $journeyInfo->user_id_grabber, $data);
+        $notifyInfo = $deviceInfo->pushNotification('Start the trip!', 'Let\'s start!', $journeyInfo->user_id_grabber,
+            $data);
 
         $journeyInfo->save();
 
@@ -237,42 +234,42 @@ class RequestController extends Controller
 
     }
 
-	/**
-	 * @param Request $request
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function endTheTrip(Request $request)
-	{
-		$journeys = new Journeys();
-		$journeyId = $request->get('journey_id');
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function endTheTrip(Request $request)
+    {
+        $journeys = new Journeys();
+        $journeyId = $request->get('journey_id');
 
-		$activeJourney = $journeys->where('id', '=', $journeyId)->first();
+        $activeJourney = $journeys->where('id', '=', $journeyId)->first();
 
-		if ($activeJourney->id != 1) {
-			return $this->error(1, "This journey is not started", 200);
-		}
+        if ($activeJourney->id != 1) {
+            return $this->error(1, "This journey is not started", 200);
+        }
 
-		$activeJourney->status = 2; // The journey is finished
-		$activeJourney->finish_date = date('Y-m-d H:i:s', time());
+        $activeJourney->status = 2; // The journey is finished
+        $activeJourney->finish_date = date('Y-m-d H:i:s', time());
 
-		$activeJourney->save();
+        $activeJourney->save();
 
-		return $this->success(200);
-	}
+        return $this->success(200);
+    }
 
-	/**
-	 * @param Request $request
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-	public function confirmRequest(Request $request)
-	{
-		$deviceInfo = new DeviceInfo();
-		$user = $this->user;
-		$requests = new Requests();
-		$journey = new Journeys();
-		$senderId = $request->get('sender_id');
-		$receiverId = $user->id;
-		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function confirmRequest(Request $request)
+    {
+        $deviceInfo = new DeviceInfo();
+        $user = $this->user;
+        $requests = new Requests();
+        $journey = new Journeys();
+        $senderId = $request->get('sender_id');
+        $receiverId = $user->id;
+        $confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
 
         $requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 1)->first();
         $requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->first();
@@ -307,7 +304,8 @@ class RequestController extends Controller
                 ]
             ];
 
-            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!', 'This user has accepted your request!', $senderId, $data);
+            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!',
+                'This user has accepted your request!', $senderId, $data);
 
             if ($senderInfo->vehicle_type == 0) {
                 $neederId = $senderInfo->user_id;
@@ -377,11 +375,14 @@ class RequestController extends Controller
                 'type' => 'confirm_request',
                 'status' => 'deny'
             ];
-            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!', 'This user has canceled your request!', $senderId, $data);
-            $result = array([
-                "status" => "deny",
-                "request_info" => $receiverResponseInfo
-            ]);
+            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!',
+                'This user has canceled your request!', $senderId, $data);
+            $result = array(
+                [
+                    "status" => "deny",
+                    "request_info" => $receiverResponseInfo
+                ]
+            );
         }
 
         return $this->success(
@@ -458,9 +459,10 @@ class RequestController extends Controller
      * @param $unit
      * @return float
      */
-    private function getDistance($lat1, $lng1, $lat2, $lng2, $unit) {
+    private function getDistance($lat1, $lng1, $lat2, $lng2, $unit)
+    {
         $theta = $lng1 - $lng2;
-        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
+        $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
         $dist = acos($dist);
         $dist = rad2deg($dist);
         $miles = $dist * 60 * 1.1515;
@@ -468,8 +470,10 @@ class RequestController extends Controller
 
         if ($unit == "M") {
             return ($miles * 1609.344);
-        } else if ($unit == "N") {
-            return ($miles * 0.8684);
+        } else {
+            if ($unit == "N") {
+                return ($miles * 0.8684);
+            }
         }
     }
 }

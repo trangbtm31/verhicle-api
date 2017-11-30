@@ -39,6 +39,7 @@ $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
 
     //Journey
     $app->post('/start-the-trip', 'RequestController@startTheTrip');
+    $app->post('/end-the-trip', 'RequestController@endTheTrip');
 
     //Rating
     $app->post('/rating','RatingController@doVote');
