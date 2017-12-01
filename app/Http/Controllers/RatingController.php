@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Rating;
+use App\Journeys;
 
 use Illuminate\Http\Request;
 
@@ -15,39 +16,46 @@ class RatingController extends Controller
     protected $rating;
 
     /**
+     * @var mixed
+     */
+    protected $user;
+
+    /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(Request $request)
     {
         //
         $this->rating = new Rating();
+        $this->user = $request->user();
+
     }
 
     public function doVote(Request $request)
     {
         $rating = $this->rating;
-        $totalRatingValue = 0;
+        $user = $this->user;
+        $journey = new Journeys();
+        $journeyId = $request->get('journey_id');
         $rating->create(
             [
-                'user_id' => $request->get('user_id'),
-                'journey_id' => $request->get('journey_id'),
+                'user_id' => $user->id,
+                'journey_id' => $journeyId,
                 'rating_value' => $request->get('rating_value'),
                 'comment' => $request->get('comment')
             ]
         );
-        $ratingValues = $rating->where('journey_id', '=', $request->get('journey_id'))->get();
-        $totalRating = $ratingValues->count();
-        $lastRating = $rating->orderBy('id', 'desc')->first();
 
-        foreach ($ratingValues as $ratingValue) {
-            $totalRatingValue += $ratingValue->rating_value;
-        }
-        $argRating = round($totalRatingValue / $totalRating, 1);
+        $argRating = $rating->getJourneyRating($journeyId);
+        $journeyInfo = $journey->find($journeyId);
+
+        $journeyInfo->rating_value = $argRating;
+
         $result = [
-            'update_date' => $lastRating->updated_at,
             'total_rating' => $argRating,
+            'user_info' => $user
         ];
 
         return $this->success(

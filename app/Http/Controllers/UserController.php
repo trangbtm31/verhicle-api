@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\DeviceInfo;
 use App\Journeys;
+use App\Rating;
 use App\User;
 use App\Requests;
 
@@ -215,45 +216,67 @@ class UserController extends Controller
 
 	public function getUserHistory(Request $request)
 	{
+	    $rating = new Rating();
 		$user = $request->user();
-		$journey = new Journeys();
-		$requests = new Requests();
 
 		$successDriverHistory = $this->getUserTrip($user->id, 2,true);
 		$failDriverHistory = $this->getUserTrip($user->id, 0,true);
 		$successHikerHistory = $this->getUserTrip($user->id, 2, false);
 		$failHikerHistory = $this->getUserTrip($user->id, 0, false);
 
+		
+
 	}
 
+    /**
+     * @param $userId
+     * @param $status
+     * @param bool $isDriver
+     * @return array
+     */
 	private function getUserTrip($userId, $status, $isDriver = true) {
 		$journey = new Journeys();
 		$requests = new Requests();
+        $rating = new Rating();
+		$users = new User();
 
-		$requestsList = array();
 		$result = array();
 		if($isDriver) {
 			$userJourneyList = $journey->where('user_id_grabber', '=', $userId)
 					->where('status', '=', $status)
 					->get();
-			foreach($userJourneyList as $userJourney) {
-				$requestInfo = $requests->find($userJourney->request_id_grabber);
-				$requestsList[] = $requestInfo;
-				$result[] = array('trip_detail' => [
-					'journey'
-				]);
-			}
+			$partner = 'user_id_needer';
 
 		} else {
 			$userJourneyList= $journey->where('user_id_needer', '=', $userId)
 				->where('status', '=', $status)
 				->get();
-			foreach($userJourneyList as $userJourney) {
-				$requestInfo = $requests->find($userJourney);
-				$requestsList[] = $requestInfo;
-			}
+            $partner = 'user_id_needer';
 		}
-		return json_decode($result);
+        foreach($userJourneyList as $userJourney) {
+            $requestInfo = $requests->find($userJourney->request_id_grabber);
+            $ratingInfo = $rating->where('user_id', '=', $userId)->where('journey_id', '=', $userJourney->id)->first();
+            $userRating = $ratingInfo->rating_value;
+            $userComment = $ratingInfo->comment;
+            $partnerInfo = $users->find($userJourney->$partner);
+            $result[] = [
+                'journey' => [
+                    'id' => $userJourney->id,
+                    'rating_value' => $userJourney->rating_value,
+                    'start_time' => $userJourney->created_at,
+                    'finish_time' => $userJourney->finish_at,
+                    'cancel_time' => $userJourney->delete_at,
+                    'start_location' => $requestInfo->source_location,
+                    'end_location' => $requestInfo->destination_location,
+                    'partner' => $partnerInfo
+                ],
+                'user_action' =>[
+                    'rating_value' => $userRating,
+                    'comment' => $userComment
+                ]
+            ];
+        }
+		return $result;
 	}
 
 	public function destroy($id)
