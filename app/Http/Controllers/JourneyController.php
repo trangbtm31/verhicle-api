@@ -256,7 +256,7 @@ class JourneyController extends Controller
 			'type' => 'end_the_trip',
 			"start_time" => date('Y-m-d H:i:s', time())
 		];
-		$notifyInfo = $deviceInfo->pushNotification(' the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
+		$notifyInfo = $deviceInfo->pushNotification('End the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
 			$data);
 
         $activeJourney->save();
