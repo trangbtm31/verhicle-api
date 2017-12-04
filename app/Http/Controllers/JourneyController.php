@@ -212,8 +212,10 @@ class JourneyController extends Controller
         $journeyInfo->status = 2; // Change status to started.
 
         $data = [
-            'type' => 'start_the_trip',
-            "start_time" => date('Y-m-d H:i:s', time())
+            'data' => [
+                'type' => 'start_the_trip',
+                "start_time" => date('Y-m-d H:i:s', time())
+            ]
         ];
         $notifyInfo = $deviceInfo->pushNotification('Start the trip!', 'Let\'s start!', $journeyInfo->user_id_grabber,
             $data);
@@ -253,8 +255,10 @@ class JourneyController extends Controller
         $activeJourney->status = 2; // The journey is finished
         $activeJourney->finish_date = date('Y-m-d H:i:s', time());
 		$data = [
-			'type' => 'end_the_trip',
-			"start_time" => date('Y-m-d H:i:s', time())
+            'data' => [
+                'type' => 'end_the_trip',
+                "start_time" => date('Y-m-d H:i:s', time())
+            ]
 		];
 		$notifyInfo = $deviceInfo->pushNotification('End the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
 			$data);
