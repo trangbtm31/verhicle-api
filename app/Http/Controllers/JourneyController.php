@@ -214,6 +214,7 @@ class JourneyController extends Controller
         $data = [
             'data' => [
                 'type' => 'start_the_trip',
+                'journey_id' => $journeyInfo->id,
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
         ];
@@ -257,6 +258,7 @@ class JourneyController extends Controller
 		$data = [
             'data' => [
                 'type' => 'end_the_trip',
+                'journey_id' => $activeJourney->id,
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
 		];
