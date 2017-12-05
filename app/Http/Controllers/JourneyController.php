@@ -212,8 +212,10 @@ class JourneyController extends Controller
         $journeyInfo->status = 2; // Change status to started.
 
         $data = [
-            'type' => 'start_the_trip',
-            "start_time" => date('Y-m-d H:i:s', time())
+            'data' => [
+                'type' => 'start_the_trip',
+                "start_time" => date('Y-m-d H:i:s', time())
+            ]
         ];
         $notifyInfo = $deviceInfo->pushNotification('Start the trip!', 'Let\'s start!', $journeyInfo->user_id_grabber,
             $data);
@@ -253,10 +255,12 @@ class JourneyController extends Controller
         $activeJourney->status = 2; // The journey is finished
         $activeJourney->finish_date = date('Y-m-d H:i:s', time());
 		$data = [
-			'type' => 'end_the_trip',
-			"start_time" => date('Y-m-d H:i:s', time())
+            'data' => [
+                'type' => 'end_the_trip',
+                "start_time" => date('Y-m-d H:i:s', time())
+            ]
 		];
-		$notifyInfo = $deviceInfo->pushNotification(' the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
+		$notifyInfo = $deviceInfo->pushNotification('End the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
 			$data);
 
         $activeJourney->save();
@@ -313,8 +317,8 @@ class JourneyController extends Controller
                     'status' => 'accept',
                     'user_id' => $receiverInfo->user_id,
                     'user_name' => $receiverInfo->name,
-                    'start_location' => $receiverInfo->source_location,
-                    'end_location' => $receiverInfo->destination_location,
+                    'start_location' => json_decode($receiverInfo->source_location),
+                    'end_location' => json_decode($receiverInfo->destination_location),
                     'avatar_link' => $receiverInfo->avatar_link,
                     'start_time' => $receiverInfo->time_start,
                     'vehicle_type' => $receiverInfo->vehicle_type,
