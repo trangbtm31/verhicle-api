@@ -13,7 +13,7 @@ class AddColumnRatingTable extends Migration
      */
     public function up()
     {
-        Schema::table('rating', function (Blueprint $table) {
+        Schema::table('ratings', function (Blueprint $table) {
             $table->integer('vehicle_type');
             //
         });
@@ -26,8 +26,9 @@ class AddColumnRatingTable extends Migration
      */
     public function down()
     {
-        Schema::table('rating', function (Blueprint $table) {
+        Schema::table('ratings', function (Blueprint $table) {
             //
+            $table->dropcolumn('vehicle_type');
         });
     }
 }

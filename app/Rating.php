@@ -13,9 +13,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rating extends Model
 {
-    protected $fillable = ['id', 'user_id', 'journey_id', 'rating_value','comment' ];
+    protected $fillable = ['user_id', 'journey_id', 'rating_value','comment' ];
 
-    protected $hidden = ['created_at', 'updated_at'];
+    protected $hidden = ['id', 'created_at', 'updated_at'];
 
     /**
      * Define a BelongsTo relationship with App\User

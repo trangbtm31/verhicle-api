@@ -37,8 +37,19 @@ class RatingController extends Controller
     {
         $rating = $this->rating;
         $user = $this->user;
+        $userId = $user->id;
         $journey = new Journeys();
         $journeyId = $request->get('journey_id');
+
+        $journeyInfo = $journey->find($journeyId);
+        if($userId != $journeyInfo->user_id_needer && $userId != $journeyInfo->user_id_grabber) {
+            return $this->error(
+                1,
+                'You didn\'t join to this journey',
+                200
+            );
+        }
+
         $rating->create(
             [
                 'user_id' => $user->id,
@@ -49,13 +60,13 @@ class RatingController extends Controller
         );
 
         $argRating = $rating->getJourneyRating($journeyId);
-        $journeyInfo = $journey->find($journeyId);
 
         $journeyInfo->rating_value = $argRating;
 
         $result = [
             'total_rating' => $argRating,
-            'user_info' => $user
+            'user_info' => $user,
+
         ];
 
         return $this->success(
