@@ -209,6 +209,14 @@ class JourneyController extends Controller
             ->where('user_id_needer', '=', $neederId)
             ->where('status', '=', '1')->first();
 
+        if(!$journeyInfo) {
+            return $this->error(
+                1,
+                'This journey is not active',
+                200
+            );
+        }
+
         $journeyInfo->status = 2; // Change status to started.
 
         $data = [
