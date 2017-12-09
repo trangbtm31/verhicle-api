@@ -25,6 +25,7 @@ $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app)
     $app->post('/signout', 'UserController@signOut');
     $app->post('/update', 'UserController@update');
     $app->post('/show', 'UserController@show');
+    $app->post('/show-history', 'UserController@getUserHistory');
     //$app->delete('/{user_id}', 'UserController@destroy');
 
 });

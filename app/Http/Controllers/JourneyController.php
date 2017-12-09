@@ -222,6 +222,7 @@ class JourneyController extends Controller
         $data = [
             'data' => [
                 'type' => 'start_the_trip',
+                'journey_id' => $journeyInfo->id,
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
         ];
@@ -256,15 +257,16 @@ class JourneyController extends Controller
 
         $activeJourney = $journeys->where('id', '=', $journeyId)->first();
 
-        if ($activeJourney->id != 1) {
+        if ($activeJourney->status != 1) {
             return $this->error(1, "This journey is not started", 200);
         }
 
         $activeJourney->status = 2; // The journey is finished
-        $activeJourney->finish_date = date('Y-m-d H:i:s', time());
+        $activeJourney->finish_at = date('Y-m-d H:i:s', time());
 		$data = [
             'data' => [
                 'type' => 'end_the_trip',
+                'journey_id' => $activeJourney->id,
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
 		];
@@ -281,7 +283,7 @@ class JourneyController extends Controller
 
         return $this->success(
 			200,
-			'end_journey_info'.
+			'end_journey_info',
 			$result
 		);
     }
