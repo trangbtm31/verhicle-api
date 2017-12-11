@@ -287,7 +287,7 @@ class JourneyController extends Controller
         $activeJourney->save();
 
 		$result = array(
-			"start_time" => date('Y-m-d H:i:s', time()),
+			"end_time" => date('Y-m-d H:i:s', time()),
 			"detail" => $activeJourney,
 			"notification_info" => $notifyInfo
 		);
