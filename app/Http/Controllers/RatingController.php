@@ -62,6 +62,7 @@ class RatingController extends Controller
         $argRating = $rating->getJourneyRating($journeyId);
 
         $journeyInfo->rating_value = $argRating;
+        $journeyInfo->save();
 
         $result = [
             'total_rating' => $argRating,
