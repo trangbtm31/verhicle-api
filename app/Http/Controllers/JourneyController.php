@@ -243,6 +243,8 @@ class JourneyController extends Controller
      */
     public function endTheTrip(Request $request)
     {
+        $user = $this->user;
+        $userId = $user->id;
         $journeys = new Journeys();
 		$deviceInfo = new DeviceInfo();
         $journeyId = $request->get('journey_id');
@@ -251,6 +253,13 @@ class JourneyController extends Controller
 
         if ($activeJourney->status != 1) {
             return $this->error(1, "This journey is not started", 200);
+        }
+        if( $userId == $activeJourney->user_id_grabber ) {
+            $partnerId = $activeJourney->user_id_needer;
+        }elseif ( $userId == $activeJourney->user_id_needer) {
+            $partnerId = $activeJourney->user_id_grabber;
+        }else {
+            return $this->error(2, "Permission denied", 200);
         }
 
         $activeJourney->status = 2; // The journey is finished
@@ -262,7 +271,9 @@ class JourneyController extends Controller
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
 		];
-		$notifyInfo = $deviceInfo->pushNotification('End the trip!', 'Hope you enjoy this trip!', $activeJourney->user_id_grabber,
+
+
+		$notifyInfo = $deviceInfo->pushNotification('End the trip!', 'Hope you enjoy this trip!', $partnerId,
 			$data);
 
         $activeJourney->save();
