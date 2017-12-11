@@ -269,8 +269,12 @@ class UserController extends Controller
             foreach($userJourneyList as $userJourney) {
                 $requestInfo = $requests->find($userJourney->request_id_grabber);
                 $ratingInfo = $rating->where('user_id', '=', $userId)->where('journey_id', '=', $userJourney->id)->first();
-                $userRating = $ratingInfo->rating_value;
-                $userComment = $ratingInfo->comment;
+                if(!$ratingInfo) {
+                    $userRating = $userComment = '';
+                } else {
+                    $userRating = $ratingInfo->rating_value;
+                    $userComment = $ratingInfo->comment;
+                }
                 $partnerInfo = $users->find($userJourney->$partner);
                 $ratingPartnerInfo = $rating->where('user_id', '=', $userJourney->$partner)->where('journey_id', '=', $userJourney->id)->first();
                 $result[] = [
