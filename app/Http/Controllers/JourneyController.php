@@ -261,7 +261,7 @@ class JourneyController extends Controller
             return $this->error(1, "This journey is not started", 200);
         }
 
-        $activeJourney->status = 2; // The journey is finished
+        $activeJourney->status = 3; // The journey is finished
         $activeJourney->finish_at = date('Y-m-d H:i:s', time());
 		$data = [
             'data' => [

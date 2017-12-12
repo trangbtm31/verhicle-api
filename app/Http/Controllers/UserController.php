@@ -218,9 +218,9 @@ class UserController extends Controller
 	{
 		$user = $request->user();
 
-		$successDriverHistory = $this->getUserTrip($user->id, 2,true);
+		$successDriverHistory = $this->getUserTrip($user->id, 3,true);
 		$failDriverHistory = $this->getUserTrip($user->id, 0,true);
-		$successHikerHistory = $this->getUserTrip($user->id, 2, false);
+		$successHikerHistory = $this->getUserTrip($user->id, 3, false);
 		$failHikerHistory = $this->getUserTrip($user->id, 0, false);
 
 		$result = array(
