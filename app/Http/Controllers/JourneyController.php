@@ -259,7 +259,7 @@ class JourneyController extends Controller
 
         $activeJourney = $journeys->where('id', '=', $journeyId)->first();
 
-        if ($activeJourney->status != 1) {
+        if ($activeJourney->status != 2) {
             return $this->error(1, "This journey is not started", 200);
         }
         if( $userId == $activeJourney->user_id_grabber ) {
