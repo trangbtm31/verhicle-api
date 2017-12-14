@@ -218,10 +218,10 @@ class UserController extends Controller
 	{
 		$user = $request->user();
 
-		if($request->get('user_type') === 'driver') {
+		if($request->get('user_type') == 'driver') {
 			$successHistory = $this->getUserTrip($user->id, 3,true);
 			$failHistory = $this->getUserTrip($user->id, 0,true);
-		} elseif ($request->get('user_type') === 'hiker') {
+		} elseif ($request->get('user_type') == 'hiker') {
 			$successHistory = $this->getUserTrip($user->id, 3,false);
 			$failHistory = $this->getUserTrip($user->id, 0,false);
 		} else {
