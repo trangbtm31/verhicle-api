@@ -218,22 +218,20 @@ class UserController extends Controller
 	{
 		$user = $request->user();
 
-		$successDriverHistory = $this->getUserTrip($user->id, 3,true);
-		$failDriverHistory = $this->getUserTrip($user->id, 0,true);
-		$successHikerHistory = $this->getUserTrip($user->id, 3, false);
-		$failHikerHistory = $this->getUserTrip($user->id, 0, false);
-
+		if($request->get('user_type') === 'driver') {
+			$successHistory = $this->getUserTrip($user->id, 3,true);
+			$failHistory = $this->getUserTrip($user->id, 0,true);
+		} elseif ($request->get('user_type') === 'hiker') {
+			$successHistory = $this->getUserTrip($user->id, 3,false);
+			$failHistory = $this->getUserTrip($user->id, 0,false);
+		} else {
+			return $this->error(1, 'Your type request is wrong', 200);
+		}
 		$result = array(
 		    [
-		        "success_journey" => [
-                    "driver" => $successDriverHistory, // When user is a driver
-                    "hiker" => $successHikerHistory // When user is a hiker
-                ],
-                "fail_journey" => [
-                    "driver" => $failDriverHistory, // When user is a driver
-                    "hiker" => $failHikerHistory
-                ]
-
+				"success" => $successHistory, // When user is a driver
+				"fail" => $failHistory, // When user is a hiker
+				"user_type" => $request->get('user_type')
             ]
         );
         return $this->success(200, 'user_history_info', $result);
