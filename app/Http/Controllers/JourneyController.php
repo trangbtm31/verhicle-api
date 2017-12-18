@@ -442,10 +442,37 @@ class JourneyController extends Controller
     public function getActiveRequest(Request $request) {
         $user = $this->user;
         $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'));
+        if(!$activeRequests) {
+            return $this->error(1,"There isn't any request", 200);
+        }
+        $result = array();
+        foreach( $activeRequests as $activeRequest) {
+            array_push(
+                $result,
+                [
+                    "user_info" => [
+                        "id" => $activeRequest->user_id,
+                        "phone" => $activeRequest->phone,
+                        "email" => $activeRequest->email,
+                        "name" => $activeRequest->name,
+                        "address" => $activeRequest->address,
+                        "gender" => $activeRequest->gender,
+                        "birthday" => $activeRequest->birthday,
+                        "avatar_link" => $activeRequest->avatar_link,
+                    ],
+                    "request_info" => [
+                        "vehicle_type" => $activeRequest->vehicle_type,
+                        "source_location" => json_decode($activeRequest->source_location),
+                        "dest_location" => json_decode($activeRequest->destination_location),
+                        "time_start" => $activeRequest->time_start,
+                    ],
+                ]
+            );
+        }
         return $this->success(
             200,
             'active_requests',
-            $activeRequests
+            $result
         );
     }
 
