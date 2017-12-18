@@ -435,9 +435,18 @@ class JourneyController extends Controller
 
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getActiveRequest(Request $request) {
         $user = $this->user;
-        $this->getUserRequest($user->id, $request->get('vehicle_type'));
+        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'));
+        return $this->success(
+            200,
+            'active_requests',
+            $activeRequests
+        );
     }
 
     /**
@@ -483,9 +492,9 @@ class JourneyController extends Controller
         if ($vehicleType != null) {
             $userList = $userRequest->where('requests.user_id', '!=', $userId);
             if ($vehicleType == 0) {
-                $result = $userList->where('requests.vehicle_type', '!=', '0')->get();
+                $result = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->get();
             } else {
-                $result = $userList->where('requests.vehicle_type', '=', '0')->get();
+                $result = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->get();
             }
         } else {
             $result = $userRequest->where('requests.user_id', '=', $userId)->where(
