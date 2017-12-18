@@ -435,6 +435,11 @@ class JourneyController extends Controller
 
     }
 
+    public function getActiveRequest(Request $request) {
+        $user = $this->user;
+        $this->getUserRequest($user->id, $request->get('vehicle_type'));
+    }
+
     /**
      * @param $userId
      * @return \Illuminate\Database\Eloquent\Model|null|static

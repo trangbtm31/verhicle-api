@@ -41,6 +41,7 @@ $app->group(['prefix' => 'api', 'middleware' => 'auth'], function () use($app) {
     //Journey
     $app->post('/start-the-trip', 'JourneyController@startTheTrip');
     $app->post('/end-the-trip', 'JourneyController@endTheTrip');
+    $app->post('/get-active-request', 'JourneyController@getActiveRequest');
 
     //Rating
     $app->post('/rating','RatingController@doVote');
