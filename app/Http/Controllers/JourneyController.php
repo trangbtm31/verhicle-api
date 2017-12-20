@@ -471,7 +471,7 @@ class JourneyController extends Controller
         }
         return $this->success(
             200,
-            'active_requests',
+            'active_users',
             $result
         );
     }
