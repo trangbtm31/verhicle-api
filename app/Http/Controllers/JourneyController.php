@@ -95,7 +95,7 @@ class JourneyController extends Controller
             $userActiveDistance = $this->getDistance($activeLat1, $activeLng1, $activeLat2, $activeLng2, 'M');
             $startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
             $destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
-            if ($startDistance <= 5000 && $destinationDistance <= 5000) {
+            if ($startDistance <= 500 && $destinationDistance <= 500) {
                 array_push(
                     $result,
                     [
