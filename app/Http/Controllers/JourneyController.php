@@ -162,8 +162,7 @@ class JourneyController extends Controller
             ]
         ];
 
-        $result = $deviceInfo->pushNotification('You have a request!', 'Hey, would you like to go together?',
-            $request->get('receiver_id'), $data);
+        $result = $deviceInfo->pushNotification($request->get('receiver_id'), $data);
 
         /*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
         if ($isSentSusscess) {
@@ -226,7 +225,7 @@ class JourneyController extends Controller
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
         ];
-        $notifyInfo = $deviceInfo->pushNotification('Start the trip!', 'Let\'s start!', $journeyInfo->user_id_grabber,
+        $notifyInfo = $deviceInfo->pushNotification($journeyInfo->user_id_grabber,
             $data);
 
         $journeyInfo->save();
@@ -281,8 +280,7 @@ class JourneyController extends Controller
 		];
 
 
-		$notifyInfo = $deviceInfo->pushNotification('End the trip!', 'Hope you enjoy this trip!', $partnerId,
-			$data);
+		$notifyInfo = $deviceInfo->pushNotification($partnerId, $data);
 
         $activeJourney->save();
 
@@ -346,8 +344,7 @@ class JourneyController extends Controller
                 ]
             ];
 
-            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!',
-                'This user has accepted your request!', $senderId, $data);
+            $receiverResponseInfo = $deviceInfo->pushNotification( $senderId, $data);
 
             if ($senderInfo->vehicle_type == 0) {
                 $neederId = $senderInfo->user_id;
@@ -417,8 +414,7 @@ class JourneyController extends Controller
                 'type' => 'confirm_request',
                 'status' => 'deny'
             ];
-            $receiverResponseInfo = $deviceInfo->pushNotification('You have a response!',
-                'This user has canceled your request!', $senderId, $data);
+            $receiverResponseInfo = $deviceInfo->pushNotification( $senderId, $data);
             $result = array(
                 [
                     "status" => "deny",
