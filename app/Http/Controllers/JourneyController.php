@@ -199,14 +199,20 @@ class JourneyController extends Controller
     public function startTheTrip(Request $request)
     {
         $user = $this->user;
-        $neederId = $user->id;
+        $userId = $user->id;
         $journey = new Journeys();
         $deviceInfo = new DeviceInfo();
 
         // Get info of pending journey.
-        $journeyInfo = $journey
-            ->where('user_id_needer', '=', $neederId)
-            ->where('status', '=', '1')->first();
+        if($request->get('vehicle_type') == 0 ) {
+            $journeyInfo = $journey
+                ->where('user_id_needer', '=', $userId)
+                ->where('status', '=', '1')->first();
+        } else {
+            $journeyInfo = $journey
+                ->where('user_id_grabber', '=', $userId)
+                ->where('status', '=', '1')->first();
+        }
 
         if(!$journeyInfo) {
             return $this->error(
