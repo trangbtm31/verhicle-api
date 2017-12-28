@@ -140,6 +140,7 @@ class JourneyController extends Controller
         $journey = new Journeys();
         $user = $this->user;
         $userId = $user->id;
+        $receiverId = $request->get('receiver_id');
 
         $userRequest = $this->getUserRequest($userId);
         if (!$userRequest) {
@@ -149,10 +150,6 @@ class JourneyController extends Controller
                 200
             );
         }
-
-        $requestInfo = $journey->find($userRequest->id);
-
-        $requestInfo->status = 2; //status change to pending
 
         $data = [
             'data' => [
@@ -168,12 +165,15 @@ class JourneyController extends Controller
             ]
         ];
 
-        $result = $deviceInfo->pushNotification($request->get('receiver_id'), $data);
+        $result = $deviceInfo->pushNotification($receiverId, $data);
 
         $requestInfo = $journey->find($userRequest->id);
+        $receiverRequestInfo = $journey->where('user_id', '=', $receiverId)->where('status', '=', 1)->orderBy('id', 'desc')->first();
         if ($result['success']) {
-            $requestInfo->status = 2; // This request owner has sent request to another user.
+            $requestInfo->status = 2; // This request owner has sent request to another user. ( status change to pending )
             $requestInfo->save();
+            $receiverRequestInfo->status = 2; // This request owner has received request to another user. ( status change to pending )
+            $receiverRequestInfo->save();
         }
 
         return $this->success(
