@@ -52,6 +52,7 @@ class JourneyController extends Controller
         $lng1 = json_decode($srcLocation)->lng;
         $lat2 = json_decode($desLocation)->lat;
         $lng2 = json_decode($desLocation)->lng;
+        $startTime = date("h:i", strtotime($request->get('time_start')));
         $userDistance = $this->getDistance($lat1, $lng1, $lat2, $lng2, 'M');
 
         $activeRequests = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->get();
@@ -64,7 +65,7 @@ class JourneyController extends Controller
                 'user_id' => $userId,
                 'source_location' => $srcLocation,
                 'destination_location' => $request->get('destination_location'),
-                'time_start' => date("h:i", strtotime($request->get('time_start'))),
+                'time_start' => $startTime,
                 'vehicle_type' => $vehicleType,
                 'status' => 1,
             ]
@@ -83,7 +84,7 @@ class JourneyController extends Controller
             $isExistUser->token = $fcmToken;
             $isExistUser->save();
         }
-        $activeUsers = $this->getUserRequest($userId, $vehicleType);
+        $activeUsers = $this->getUserRequest($userId, $vehicleType, 1, $startTime);
 
         foreach ($activeUsers as $activeUser) {
             $srcLocation = json_decode($activeUser->source_location);
@@ -497,7 +498,7 @@ class JourneyController extends Controller
      * @return mixed
      *
      */
-    private function getUserRequest($userId, $vehicleType = null, $status = 1)
+    private function getUserRequest($userId, $vehicleType = null, $status = 1, $startTime = null)
     {
         $requestInfo = new Requests();
 
@@ -521,9 +522,9 @@ class JourneyController extends Controller
         if ($vehicleType != null) {
             $userList = $userRequest->where('requests.user_id', '!=', $userId);
             if ($vehicleType == 0) {
-                $result = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->get();
+                $result = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->whereDate('requests.time_start', ">=" , $startTime )->get();
             } else {
-                $result = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->get();
+                $result = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->whereDate('requests.time_start', ">=" , $startTime)->get();
             }
         } else {
             $result = $userRequest->where('requests.user_id', '=', $userId)->where(
