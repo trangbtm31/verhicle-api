@@ -137,6 +137,7 @@ class JourneyController extends Controller
     public function sendRequestToAnotherOne(Request $request)
     {
         $deviceInfo = new DeviceInfo();
+        $journey = new Journeys();
         $user = $this->user;
         $userId = $user->id;
 
@@ -148,6 +149,10 @@ class JourneyController extends Controller
                 200
             );
         }
+
+        $requestInfo = $journey->find($userRequest->id);
+
+        $requestInfo->status = 2; //status change to pending
 
         $data = [
             'data' => [
@@ -165,11 +170,11 @@ class JourneyController extends Controller
 
         $result = $deviceInfo->pushNotification($request->get('receiver_id'), $data);
 
-        /*$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->first();
-        if ($isSentSusscess) {
+        $requestInfo = $journey->find($userRequest->id);
+        if ($result['success']) {
             $requestInfo->status = 2; // This request owner has sent request to another user.
             $requestInfo->save();
-        }*/
+        }
 
         return $this->success(
             200,
@@ -421,7 +426,7 @@ class JourneyController extends Controller
                 'type' => 'confirm_request',
                 'status' => 'deny'
             ];
-            $receiverResponseInfo = $deviceInfo->pushNotification( $senderId, $data);
+            $receiverResponseInfo = $deviceInfo->pushNotification($senderId, $data);
             $result = array(
                 [
                     "status" => "deny",
