@@ -42,7 +42,7 @@ class JourneyController extends Controller
     public function pushInfomation(Request $request)
     {
         $requestInfo = new Requests();
-        $fcmService = new DeviceInfo();
+        $deviceInfo = new DeviceInfo();
         $user = $request->user();
         $result = array();
         $vehicleType = $request->get('vehicle_type');
@@ -54,12 +54,8 @@ class JourneyController extends Controller
         $lng1 = json_decode($srcLocation)->lng;
         $lat2 = json_decode($desLocation)->lat;
         $lng2 = json_decode($desLocation)->lng;
-        $startTime = new DateTime(strtotime($request->get('time_start')));
-        $currentTime = Carbon::now();
-        $userDistance = $this->getDistance($lat1, $lng1, $lat2, $lng2, 'M');
-
-        $interval = date_diff(new DateTime($startTime),new DateTime(date("h:i", strtotime('5:30:01'))));
-        echo $interval->format('%R%a days');die;
+        $startTime = date('H:i', strtotime($request->get('time_start')));
+        $currentTime = date('H:i',strtotime($request->get('current_time')));
 
         $activeRequests = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->get();
         foreach ($activeRequests as $activeRequest) {
@@ -78,9 +74,9 @@ class JourneyController extends Controller
         );
 
         // Check if this device info hasn't saved yet
-        $isExistUser = $fcmService->where('user_id', '=', $userId)->first();
+        $isExistUser = $deviceInfo->where('user_id', '=', $userId)->first();
         if (!$isExistUser) {
-            $fcmService->create(
+            $deviceInfo->create(
                 [
                     'user_id' => $userId,
                     'token' => $fcmToken,
@@ -99,10 +95,15 @@ class JourneyController extends Controller
             $activeLng1 = $srcLocation->lng;
             $activeLat2 = $desLocation->lat;
             $activeLng2 = $desLocation->lng;
-            $userActiveDistance = $this->getDistance($activeLat1, $activeLng1, $activeLat2, $activeLng2, 'M');
+
+            // Compare the time of user with the active request
+            $isSameTime = $deviceInfo->compareTime($startTime, $activeUser->time_start);
+            // Get Distance from own start location to the partner's start location
             $startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
+            // Get Distance from own end location to the partner's end location
             $destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
-            if ($startDistance <= 500 && $destinationDistance <= 500) {
+            // Check if the trip is the same
+            if ($startDistance <= 500 && $destinationDistance <= 500 && $isSameTime < 30) {
                 array_push(
                     $result,
                     [
@@ -573,4 +574,5 @@ class JourneyController extends Controller
             }
         }
     }
+
 }

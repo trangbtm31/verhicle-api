@@ -28,6 +28,12 @@ class DeviceInfo extends Model
 		return $this->belongsTo('App\User');
 	}
 
+	/**
+	 * @param $userId
+	 * @param null $data
+	 * @return array
+	 * @throws \LaravelFCM\Message\InvalidOptionException
+	 */
 	public function pushNotification($userId, $data = null) {
         $optionBuilder = new OptionsBuilder();
         $optionBuilder->setTimeToLive(60*10);
@@ -50,5 +56,22 @@ class DeviceInfo extends Model
             "success" => $isSentSuccess
         ];
     }
+
+	/**
+	 * @param $date_1
+	 * @param $date_2
+	 * @param string $differenceFormat
+	 * @return string
+	 */
+	public function compareTime($date_1 , $date_2 , $differenceFormat = '%i' )
+	{
+		$datetime1 = date_create($date_1);
+		$datetime2 = date_create($date_2);
+
+		$interval = date_diff($datetime1, $datetime2);
+
+		return $interval->format($differenceFormat);
+
+	}
 
 }
