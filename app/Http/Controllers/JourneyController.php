@@ -455,8 +455,7 @@ class JourneyController extends Controller
      */
     public function getActiveRequest(Request $request) {
         $user = $this->user;
-        $currentTime = Carbon::now();
-        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'), 1, $currentTime);
+        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'), 1, date('H:i:s',strtotime($request->get('current_time'))));
         if(!$activeRequests) {
             return $this->error(1,"There isn't any request", 200);
         }
@@ -534,9 +533,9 @@ class JourneyController extends Controller
         if ($vehicleType != null) {
             $userList = $userRequest->where('requests.user_id', '!=', $userId);
             if ($vehicleType == 0) {
-                $result = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->whereDate('requests.time_start', ">=" , $currentTime )->get();
+                $result = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->whereTime('requests.time_start', ">=" , $currentTime )->get();
             } else {
-                $result = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->whereDate('requests.time_start', ">=" , $currentTime)->get();
+                $result = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->whereTime('requests.time_start', ">=" , $currentTime)->get();
             }
         } else {
             $result = $userRequest->where('requests.user_id', '=', $userId)->where(
