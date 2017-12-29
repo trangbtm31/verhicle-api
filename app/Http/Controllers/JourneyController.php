@@ -455,7 +455,8 @@ class JourneyController extends Controller
      */
     public function getActiveRequest(Request $request) {
         $user = $this->user;
-        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'));
+        $currentTime = Carbon::now();
+        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'), 1, $currentTime);
         if(!$activeRequests) {
             return $this->error(1,"There isn't any request", 200);
         }
