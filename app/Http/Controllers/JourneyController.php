@@ -430,8 +430,10 @@ class JourneyController extends Controller
             );
         } else {
             $data = [
-                'type' => 'confirm_request',
-                'status' => 'deny'
+                'data'=> [
+                    'type' => 'confirm_request',
+                    'status' => 'deny'
+                ]
             ];
             $receiverResponseInfo = $deviceInfo->pushNotification($senderId, $data);
             $result = array(
