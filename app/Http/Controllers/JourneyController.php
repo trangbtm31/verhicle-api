@@ -273,10 +273,9 @@ class JourneyController extends Controller
             'data' => [
                 'type' => 'end_the_trip',
                 'journey_id' => $activeJourney->id,
-                "start_time" => date('Y-m-d H:i:s', time())
+                "end_time" => date('Y-m-d H:i:s', time())
             ]
 		];
-
 
 		$notifyInfo = $deviceInfo->pushNotification($partnerId, $data);
 
@@ -296,6 +295,54 @@ class JourneyController extends Controller
     }
 
     public function cancelTheTrip(Request $request) {
+        $journeys = new Journeys();
+        $deviceInfo = new DeviceInfo();
+
+        $user = $this->user;
+        $userId = $user->id;
+        $journeyId = $request->get('journey_id');
+
+        $activeJourney = $journeys->where('id', '=', $journeyId)->first();
+
+        if ($activeJourney->status != 2) {
+            return $this->error(1, "This journey is not accepted", 200);
+        }
+        if( $userId == $activeJourney->user_id_grabber ) {
+            $partnerId = $activeJourney->user_id_needer;
+        }elseif ( $userId == $activeJourney->user_id_needer) {
+            $partnerId = $activeJourney->user_id_grabber;
+        }else {
+            return $this->error(2, "Permission denied", 200);
+        }
+
+        $activeJourney->status = 0; // The journey is deleted
+        $activeJourney->delete_at = date('Y-m-d H:i:s', time());
+        $activeJourney->user_delete_id = $userId;
+        $activeJourney->rating_value = 0;
+        $data = [
+            'data' => [
+                'type' => 'cancel_the_trip',
+                'journey_id' => $activeJourney->id,
+                "delete_at" => date('Y-m-d H:i:s', time())
+            ]
+        ];
+
+        $notifyInfo = $deviceInfo->pushNotification($partnerId, $data);
+        $activeJourney->save();
+
+        $result = array(
+            "delete_at" => date('Y-m-d H:i:s', time()),
+            "detail" => $activeJourney,
+            "notification_info" => $notifyInfo
+        );
+
+        return $this->success(
+            200,
+            'cancel_journey_info',
+            $result
+        );
+
+
 
     }
 
