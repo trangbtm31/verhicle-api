@@ -49,11 +49,6 @@ class JourneyController extends Controller
         $userId = $user->id;
         $fcmToken = $request->get('device_token');
         $srcLocation = $request->get('source_location');
-        $desLocation = $request->get('destination_location');
-        $lat1 = json_decode($srcLocation)->lat;
-        $lng1 = json_decode($srcLocation)->lng;
-        $lat2 = json_decode($desLocation)->lat;
-        $lng2 = json_decode($desLocation)->lng;
         $startTime = date('H:i', strtotime($request->get('time_start')));
         $currentTime = date('H:i',strtotime($request->get('current_time')));
 
@@ -73,6 +68,7 @@ class JourneyController extends Controller
             ]
         );
 
+        $userRequestInfo = $requestInfo->where('user_id', '=', $userId)->where('status', '=', 1)->first();
         // Check if this device info hasn't saved yet
         $isExistUser = $deviceInfo->where('user_id', '=', $userId)->first();
         if (!$isExistUser) {
@@ -86,46 +82,29 @@ class JourneyController extends Controller
             $isExistUser->token = $fcmToken;
             $isExistUser->save();
         }
-        $activeUsers = $this->getUserRequest($userId, $vehicleType, 1, $currentTime);
-
+        $activeUsers = $this->getUserRequest($userId, $vehicleType, 1, $currentTime, $userRequestInfo);
         foreach ($activeUsers as $activeUser) {
-            $srcLocation = json_decode($activeUser->source_location);
-            $desLocation = json_decode($activeUser->destination_location);
-            $activeLat1 = $srcLocation->lat;
-            $activeLng1 = $srcLocation->lng;
-            $activeLat2 = $desLocation->lat;
-            $activeLng2 = $desLocation->lng;
-
-            // Compare the time of user with the active request
-            $isSameTime = $deviceInfo->compareTime($startTime, $activeUser->time_start);
-            // Get Distance from own start location to the partner's start location
-            $startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
-            // Get Distance from own end location to the partner's end location
-            $destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
-            // Check if the trip is the same
-            if ($startDistance <= 500 && $destinationDistance <= 500 && $isSameTime < 30) {
-                array_push(
-                    $result,
-                    [
-                        "user_info" => [
-                            "id" => $activeUser->user_id,
-                            "phone" => $activeUser->phone,
-                            "email" => $activeUser->email,
-                            "name" => $activeUser->name,
-                            "address" => $activeUser->address,
-                            "gender" => $activeUser->gender,
-                            "birthday" => $activeUser->birthday,
-                            "avatar_link" => $activeUser->avatar_link,
-                        ],
-                        "request_info" => [
-                            "vehicle_type" => $activeUser->vehicle_type,
-                            "source_location" => $srcLocation,
-                            "dest_location" => $desLocation,
-                            "time_start" => $activeUser->time_start,
-                        ],
-                    ]
-                );
-            }
+            array_push(
+                $result,
+                [
+                    "user_info" => [
+                        "id" => $activeUser->user_id,
+                        "phone" => $activeUser->phone,
+                        "email" => $activeUser->email,
+                        "name" => $activeUser->name,
+                        "address" => $activeUser->address,
+                        "gender" => $activeUser->gender,
+                        "birthday" => $activeUser->birthday,
+                        "avatar_link" => $activeUser->avatar_link,
+                    ],
+                    "request_info" => [
+                        "vehicle_type" => $activeUser->vehicle_type,
+                        "source_location" => json_decode($activeUser->source_location),
+                        "dest_location" => json_decode($activeUser->destination_location),
+                        "time_start" => $activeUser->time_start,
+                    ],
+                ]
+            );
         }
 
         return $this->success(
@@ -316,6 +295,10 @@ class JourneyController extends Controller
 		);
     }
 
+    public function cancelTheTrip(Request $request) {
+
+    }
+
     /**
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -457,8 +440,11 @@ class JourneyController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function getActiveRequest(Request $request) {
+        $requestInfo = new Requests();
+
         $user = $this->user;
-        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'), 1, date('H:i:s',strtotime($request->get('current_time'))));
+        $userRequestInfo = $requestInfo->where('user_id', '=', $user->id)->where('status', '=', 1)->first();
+        $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'), 1, date('H:i:s',strtotime($request->get('current_time'))),$userRequestInfo);
         if(!$activeRequests) {
             return $this->error(1,"There isn't any request", 200);
         }
@@ -512,11 +498,13 @@ class JourneyController extends Controller
      * @return mixed
      *
      */
-    private function getUserRequest($userId, $vehicleType = null, $status = 1, $currentTime = null)
+    private function getUserRequest($userId, $vehicleType = null, $status = 1, $currentTime = null, $userRequestInfo = null)
     {
         $requestInfo = new Requests();
+        $deviceInfo = new DeviceInfo();
 
-        $userRequest = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
+        $result = array();
+        $activeUserRequest = $requestInfo->join('users', 'requests.user_id', '=', 'users.id')
             ->select(
                 'users.phone',
                 'users.email',
@@ -534,20 +522,43 @@ class JourneyController extends Controller
 
             );
         if ($vehicleType != null) {
-            $userList = $userRequest->where('requests.user_id', '!=', $userId);
+            $userList = $activeUserRequest->where('requests.user_id', '!=', $userId);
             if ($vehicleType == 0) {
-                $result = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->whereTime('requests.time_start', ">=" , $currentTime )->get();
+                $activeUserList = $userList->where('requests.vehicle_type', '!=', '0')->where('requests.status','=',$status)->whereTime('requests.time_start', ">=" , $currentTime )->get();
             } else {
-                $result = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->whereTime('requests.time_start', ">=" , $currentTime)->get();
+                $activeUserList = $userList->where('requests.vehicle_type', '=', '0')->where('requests.status','=',$status)->whereTime('requests.time_start', ">=" , $currentTime)->get();
             }
+            foreach ($activeUserList as $activeUser) {
+                $lat1 = json_decode($userRequestInfo->source_location)->lat;
+                $lng1 = json_decode($userRequestInfo->source_location)->lng;
+                $lat2 = json_decode($userRequestInfo->destination_location)->lat;
+                $lng2 = json_decode($userRequestInfo->destination_location)->lng;
+                $srcLocation = json_decode($activeUser->source_location);
+                $desLocation = json_decode($activeUser->destination_location);
+                $activeLat1 = $srcLocation->lat;
+                $activeLng1 = $srcLocation->lng;
+                $activeLat2 = $desLocation->lat;
+                $activeLng2 = $desLocation->lng;
+
+                // Compare the time of user with the active request
+                $isSameTime = $deviceInfo->compareTime($userRequestInfo->time_start, $activeUser->time_start);
+                // Get Distance from own start location to the partner's start location
+                $startDistance = $this->getDistance($lat1, $lng1, $activeLat1, $activeLng1, 'M');
+                // Get Distance from own end location to the partner's end location
+                $destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
+                // Check if the trip is the same
+                if ($startDistance <= 500 && $destinationDistance <= 500 && $isSameTime < 30) {
+                    array_push($result, $activeUser);
+                }
+            }
+            $result = collect($result);
         } else {
-            $result = $userRequest->where('requests.user_id', '=', $userId)->where(
+            $result = $activeUserRequest->where('requests.user_id', '=', $userId)->where(
                 'requests.status',
                 '=',
                 $status
             )->first();
         }
-
         return json_decode($result);
     }
 
