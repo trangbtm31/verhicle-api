@@ -286,7 +286,7 @@ class UserController extends Controller
                         'start_location' => json_decode($requestInfo->source_location),
                         'end_location' => json_decode($requestInfo->destination_location),
                         'partner' => $partnerInfo,
-                        'partner_rating' => $ratingPartnerInfo
+                        'partner_rating' => !empty($ratingPartnerInfo) ? $ratingPartnerInfo: array()
                     ],
                     'user_action' =>[
                         'rating_value' => $userRating,
