@@ -491,6 +491,9 @@ class JourneyController extends Controller
 
         $user = $this->user;
         $userRequestInfo = $requestInfo->where('user_id', '=', $user->id)->where('status', '=', 1)->first();
+        if(empty($userRequestInfo)) {
+            return $this->error(2, "You haven't register the request yet", 200);
+        }
         $activeRequests = $this->getUserRequest($user->id, $request->get('vehicle_type'), 1, date('H:i:s',strtotime($request->get('current_time'))),$userRequestInfo);
         if(!$activeRequests) {
             return $this->error(1,"There isn't any request", 200);

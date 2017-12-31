@@ -276,23 +276,42 @@ class UserController extends Controller
                 }
                 $partnerInfo = $users->find($userJourney->$partner);
                 $ratingPartnerInfo = $rating->where('user_id', '=', $userJourney->$partner)->where('journey_id', '=', $userJourney->id)->first();
-                $result[] = [
-                    'journey' => [
-                        'id' => $userJourney->id,
-                        'rating_value' => $userJourney->rating_value,
-                        'start_time' => $userJourney->created_at,
-                        'finish_time' => $userJourney->finish_at,
-                        'cancel_time' => $userJourney->delete_at,
-                        'start_location' => json_decode($requestInfo->source_location),
-                        'end_location' => json_decode($requestInfo->destination_location),
-                        'partner' => $partnerInfo,
-                        'partner_rating' => !empty($ratingPartnerInfo) ? $ratingPartnerInfo: array()
-                    ],
-                    'user_action' =>[
-                        'rating_value' => $userRating,
-                        'comment' => $userComment
-                    ]
-                ];
+				if(!empty($ratingPartnerInfo)){
+					$result[] = [
+						'journey' => [
+							'id' => $userJourney->id,
+							'rating_value' => $userJourney->rating_value,
+							'start_time' => $userJourney->created_at,
+							'finish_time' => $userJourney->finish_at,
+							'cancel_time' => $userJourney->delete_at,
+							'start_location' => json_decode($requestInfo->source_location),
+							'end_location' => json_decode($requestInfo->destination_location),
+							'partner' => $partnerInfo,
+							'partner_rating' => $ratingPartnerInfo
+						],
+						'user_action' =>[
+							'rating_value' => $userRating,
+							'comment' => $userComment
+						]
+					];
+				} else {
+					$result[] = [
+						'journey' => [
+							'id' => $userJourney->id,
+							'rating_value' => $userJourney->rating_value,
+							'start_time' => $userJourney->created_at,
+							'finish_time' => $userJourney->finish_at,
+							'cancel_time' => $userJourney->delete_at,
+							'start_location' => json_decode($requestInfo->source_location),
+							'end_location' => json_decode($requestInfo->destination_location),
+							'partner' => $partnerInfo
+						],
+						'user_action' =>[
+							'rating_value' => $userRating,
+							'comment' => $userComment
+						]
+					];
+				}
             }
         }
 		return $result;
