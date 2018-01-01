@@ -16,8 +16,10 @@ class CreateRatingTable extends Migration
         //
         Schema::create('ratings', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('journey_id')->references('id')->on('journeys')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('journey_id')->unsigned();
+            $table->foreign('journey_id')->references('id')->on('journeys')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('user_id')->unsigned();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->float('rating_value',8 ,2);
             $table->text('comment');
             $table->timestamps();

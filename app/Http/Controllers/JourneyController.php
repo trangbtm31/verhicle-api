@@ -198,11 +198,11 @@ class JourneyController extends Controller
         // Get info of pending journey.
         if($request->get('vehicle_type') == 0 ) {
             $journeyInfo = $journey
-                ->where('user_id_needer', '=', $userId)
+                ->where('hiker_id', '=', $userId)
                 ->where('status', '=', '1')->first();
         } else {
             $journeyInfo = $journey
-                ->where('user_id_grabber', '=', $userId)
+                ->where('driver_id', '=', $userId)
                 ->where('status', '=', '1')->first();
         }
 
@@ -223,7 +223,7 @@ class JourneyController extends Controller
                 "start_time" => date('Y-m-d H:i:s', time())
             ]
         ];
-        $notifyInfo = $deviceInfo->pushNotification($journeyInfo->user_id_grabber,
+        $notifyInfo = $deviceInfo->pushNotification($journeyInfo->driver_id,
             $data);
 
         $journeyInfo->save();
@@ -259,10 +259,10 @@ class JourneyController extends Controller
         if ($activeJourney->status != 2) {
             return $this->error(1, "This journey is not started", 200);
         }
-        if( $userId == $activeJourney->user_id_grabber ) {
-            $partnerId = $activeJourney->user_id_needer;
-        }elseif ( $userId == $activeJourney->user_id_needer) {
-            $partnerId = $activeJourney->user_id_grabber;
+        if( $userId == $activeJourney->driver_id ) {
+            $partnerId = $activeJourney->hiker_id;
+        }elseif ( $userId == $activeJourney->hiker_id) {
+            $partnerId = $activeJourney->driver_id;
         }else {
             return $this->error(2, "Permission denied", 200);
         }
@@ -294,6 +294,10 @@ class JourneyController extends Controller
 		);
     }
 
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function cancelTheTrip(Request $request) {
         $journeys = new Journeys();
         $deviceInfo = new DeviceInfo();
@@ -301,18 +305,18 @@ class JourneyController extends Controller
         $user = $this->user;
         $userId = $user->id;
         if($request->get('vehicle_type') == 0) {
-            $activeJourney = $journeys->where('user_id_needer', '=', $userId)->where('status','=', 1)->orderBy('id','desc')->first();
+            $activeJourney = $journeys->where('hiker_id', '=', $userId)->where('status','=', 1)->orderBy('id','desc')->first();
         } else {
-            $activeJourney = $journeys->where('user_id_grabber', '=', $userId)->where('status','=', 1)->orderBy('id','desc')->first();
+            $activeJourney = $journeys->where('driver_id', '=', $userId)->where('status','=', 1)->orderBy('id','desc')->first();
         }
 
         if ($activeJourney->status != 2) {
             return $this->error(1, "This journey is not accepted", 200);
         }
-        if( $userId == $activeJourney->user_id_grabber ) {
-            $partnerId = $activeJourney->user_id_needer;
-        }elseif ( $userId == $activeJourney->user_id_needer) {
-            $partnerId = $activeJourney->user_id_grabber;
+        if( $userId == $activeJourney->driver_id ) {
+            $partnerId = $activeJourney->hiker_id;
+        }elseif ( $userId == $activeJourney->hiker_id) {
+            $partnerId = $activeJourney->driver_id;
         }else {
             return $this->error(2, "Permission denied", 200);
         }
@@ -412,10 +416,10 @@ class JourneyController extends Controller
             $journey->create(
                 [
                     'sender_id' => $senderId,
-                    'user_id_needer' => $neederId,
-                    'request_id_needer' => $neederRequestId,
-                    'request_id_grabber' => $grabberRequestId,
-                    'user_id_grabber' => $grabberId,
+                    'hiker_id' => $neederId,
+                    'request_hiker_id' => $neederRequestId,
+                    'request_driver_id' => $grabberRequestId,
+                    'driver_id' => $grabberId,
                     'status' => 1, // Is pending for starting the trip
                 ]
             );

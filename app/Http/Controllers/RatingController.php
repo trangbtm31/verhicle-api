@@ -42,7 +42,7 @@ class RatingController extends Controller
         $journeyId = $request->get('journey_id');
 
         $journeyInfo = $journey->find($journeyId);
-        if($userId != $journeyInfo->user_id_needer && $userId != $journeyInfo->user_id_grabber) {
+        if($userId != $journeyInfo->hiker_id && $userId != $journeyInfo->driver_id) {
             return $this->error(
                 1,
                 'You didn\'t join to this journey',

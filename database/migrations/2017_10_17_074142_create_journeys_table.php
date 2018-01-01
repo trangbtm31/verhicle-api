@@ -16,10 +16,14 @@ class CreateJourneysTable extends Migration
         //
         Schema::create('journeys', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('request_id_needer')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('user_id_needer')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('request_id_grabber')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
-            $table->integer('user_id_grabber')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->integer('request_hiker_id')->unsigned();
+            $table->integer('hiker_id')->unsigned();
+            $table->integer('request_driver_id')->unsigned();
+            $table->integer('driver_id')->unsigned();
+            $table->foreign('request_hiker_id')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('hiker_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('request_driver_id')->references('id')->on('requests')->onDelete('cascade')->onUpdate('cascade');
+            $table->foreign('driver_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->tinyInteger('status');
             $table->integer('sender_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
             $table->timestamps();

@@ -252,20 +252,20 @@ class UserController extends Controller
 
 		$result = array();
 		if($isDriver) {
-			$userJourneyList = $journey->where('user_id_grabber', '=', $userId)
+			$userJourneyList = $journey->where('driver_id', '=', $userId)
 					->where('status', '=', $status)
 					->get();
-			$partner = 'user_id_needer';
+			$partner = 'hiker_id';
 
 		} else {
-			$userJourneyList= $journey->where('user_id_needer', '=', $userId)
+			$userJourneyList= $journey->where('hiker_id', '=', $userId)
 				->where('status', '=', $status)
 				->get();
-            $partner = 'user_id_grabber';
+            $partner = 'driver_id';
 		}
 		if($userJourneyList) {
             foreach($userJourneyList as $userJourney) {
-                $requestInfo = $requests->find($userJourney->request_id_grabber);
+                $requestInfo = $requests->find($userJourney->request_driver_id);
                 $ratingInfo = $rating->where('user_id', '=', $userId)->where('journey_id', '=', $userJourney->id)->orderBy('id', 'desc')->take(1)->first();
                 if(!$ratingInfo) {
                     $userRating = 0;
