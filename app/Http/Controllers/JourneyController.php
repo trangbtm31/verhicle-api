@@ -300,9 +300,11 @@ class JourneyController extends Controller
 
         $user = $this->user;
         $userId = $user->id;
-        $journeyId = $request->get('journey_id');
-
-        $activeJourney = $journeys->where('id', '=', $journeyId)->first();
+        if($request->get('vehicle_type') == 0) {
+            $activeJourney = $journeys->where('user_id_needer', '=', $userId)->where('status','=', 1)->orderBy('id','desc')->first();
+        } else {
+            $activeJourney = $journeys->where('user_id_grabber', '=', $userId)->where('status','=', 1)->orderBy('id','desc')->first();
+        }
 
         if ($activeJourney->status != 2) {
             return $this->error(1, "This journey is not accepted", 200);
@@ -528,6 +530,8 @@ class JourneyController extends Controller
             $result
         );
     }
+
+
 
     /**
      * @param $userId
