@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\DeviceInfo;
+use App\Favorites;
 use App\Journeys;
 use App\Rating;
 use App\User;
@@ -317,18 +318,26 @@ class UserController extends Controller
 		return $result;
 	}
 
-	public function destroy($id)
-	{
+	/**
+	 * @param Request $request
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+	public function addToFavorites(Request $request) {
+		$favorite = new Favorites();
+		$user = $request->user();
+		$userId = $user->id;
+		$partnerId = $request->get('partner_id');
 
-		$user = User::find($id);
-
-		if (!$user) {
-			return $this->error("The user with {$id} doesn't exist", 200);
+		if(!empty($favorite->where('user_id', '=', $userId)->where('favorited_user_id', '=', $partnerId)->first())) {
+			return $this->error(1, 'You have added this user to your favorite list', 200);
 		}
 
-		$user->delete();
+		$favorite->create([
+			'user_id' => $userId,
+			'favorite_user_id' => $partnerId
+		]);
 
-		return $this->success("The user with with id {$id} has been deleted", 200);
+		return $this->success(200);
 	}
 
 	/**

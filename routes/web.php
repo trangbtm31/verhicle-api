@@ -26,7 +26,7 @@ $app->group(['prefix' => 'users', 'middleware' => 'auth'], function () use($app)
     $app->post('/update', 'UserController@update');
     $app->post('/show', 'UserController@show');
     $app->post('/show-history', 'UserController@getUserHistory');
-    //$app->delete('/{user_id}', 'UserController@destroy');
+    $app->post('/add-to-favorite', 'UserController@addToFavorites');
 
 });
 
