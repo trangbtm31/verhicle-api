@@ -9,6 +9,7 @@
 namespace App\Http\Controllers;
 
 use App\DeviceInfo;
+use App\Favorites;
 use App\Requests;
 use App\Journeys;
 
@@ -43,6 +44,7 @@ class JourneyController extends Controller
     {
         $requestInfo = new Requests();
         $deviceInfo = new DeviceInfo();
+        $favorite = new Favorites();
         $user = $request->user();
         $result = array();
         $vehicleType = $request->get('vehicle_type');
@@ -84,6 +86,7 @@ class JourneyController extends Controller
         }
         $activeUsers = $this->getUserRequest($userId, $vehicleType, 1, $currentTime, $userRequestInfo);
         foreach ($activeUsers as $activeUser) {
+            $isFavorite = $favorite->where('user_id', '=', $userId)->where('favorited_user_id', '=', $activeUser->user_id)->first();
             array_push(
                 $result,
                 [
@@ -96,6 +99,7 @@ class JourneyController extends Controller
                         "gender" => $activeUser->gender,
                         "birthday" => $activeUser->birthday,
                         "avatar_link" => $activeUser->avatar_link,
+                        "is_favorite" => !empty($isFavorite) ? 1 : 0
                     ],
                     "request_info" => [
                         "vehicle_type" => $activeUser->vehicle_type,
@@ -329,7 +333,8 @@ class JourneyController extends Controller
             'data' => [
                 'type' => 'cancel_the_trip',
                 'journey_id' => $activeJourney->id,
-                "delete_at" => date('Y-m-d H:i:s', time())
+                "delete_at" => date('Y-m-d H:i:s', time()),
+                "comment" => $request->get('comment')
             ]
         ];
 
