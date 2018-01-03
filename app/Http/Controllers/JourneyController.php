@@ -386,8 +386,8 @@ class JourneyController extends Controller
 		$receiverId = $user->id;
 		$confirmId = $request->get('confirm_id'); // if id = 1 is deny, 2 is accept
 
-		$requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 1)->first();
-		$requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->first();
+		$requestSenderInfo = $requests->where('user_id', '=', $senderId)->where('status', '=', 2)->first();
+		$requestReceriverInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 2)->first();
 
 		if (!$requestSenderInfo or !$requestReceriverInfo) {
 			return $this->error(1, "This user haven't sent any request", 200);
