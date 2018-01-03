@@ -334,7 +334,7 @@ class UserController extends Controller
 
 		$favorite->create([
 			'user_id' => $userId,
-			'favorite_user_id' => $partnerId
+			'favorited_user_id' => $partnerId
 		]);
 
 		return $this->success(200);
