@@ -205,17 +205,22 @@ class JourneyController extends Controller
 		$userId = $user->id;
 		$journey = new Journeys();
 		$deviceInfo = new DeviceInfo();
+		$requests = new Requests();
 
 		// Get info of pending journey.
 		if ($request->get('vehicle_type') == 0) {
 			$journeyInfo = $journey
 				->where('hiker_id', '=', $userId)
 				->where('status', '=', '1')->first();
+			$partnerRequest = $requests->where('user_id', '=', $journeyInfo->driver_id)->where('status', '=', 2)->orderBy('id')->first();
 		} else {
 			$journeyInfo = $journey
 				->where('driver_id', '=', $userId)
 				->where('status', '=', '1')->first();
+			$partnerRequest = $requests->where('user_id', '=', $journeyInfo->hiker_id)->where('status', '=', 2)->orderBy('id')->first();
 		}
+
+		$ownerRequest = $requests->where('user_id', '=', $userId)->where('status', '=', 2)->orderBy('id')->first();
 
 		if (!$journeyInfo) {
 			return $this->error(
@@ -238,6 +243,13 @@ class JourneyController extends Controller
 			$journeyInfo->driver_id,
 			$data
 		);
+
+		// Change status to started the trip for user's request
+		$ownerRequest->status = 3;
+		$partnerRequest->status = 3;
+
+		$ownerRequest->save();
+		$partnerRequest->save();
 
 		$journeyInfo->save();
 
@@ -265,6 +277,7 @@ class JourneyController extends Controller
 		$userId = $user->id;
 		$journeys = new Journeys();
 		$deviceInfo = new DeviceInfo();
+		$requests = new Requests();
 		$journeyId = $request->get('journey_id');
 
 		$activeJourney = $journeys->where('id', '=', $journeyId)->first();
@@ -280,7 +293,13 @@ class JourneyController extends Controller
 			return $this->error(2, "Permission denied", 200);
 		}
 
+		$partnerRequest = $requests->where('user_id', '=', $partnerId)->where('status', '=', 3)->orderBy('id')->first();
+		$ownerRequest = $requests->where('user_id', '=', $userId)->where('status', '=', 3)->orderBy('id')->first();
+
 		$activeJourney->status = 3; // The journey is finished
+		$partnerRequest->status = 4; // The journey is finished
+		$ownerRequest->status = 4; // The journey is finished
+
 		$activeJourney->finish_at = date('Y-m-d H:i:s', time());
 		$data = [
 			'data' => [
@@ -293,6 +312,8 @@ class JourneyController extends Controller
 		$notifyInfo = $deviceInfo->pushNotification($partnerId, $data);
 
 		$activeJourney->save();
+		$ownerRequest->save();
+		$partnerRequest->save();
 
 		$result = array(
 			"end_time" => date('Y-m-d H:i:s', time()),
@@ -315,6 +336,7 @@ class JourneyController extends Controller
 	{
 		$journeys = new Journeys();
 		$deviceInfo = new DeviceInfo();
+		$requests = new Requests();
 
 		$user = $this->user;
 		$userId = $user->id;
@@ -341,7 +363,13 @@ class JourneyController extends Controller
 			return $this->error(2, "Permission denied", 200);
 		}
 
-		$activeJourney->status = 0; // The journey is deleted
+		$partnerRequest = $requests->where('user_id', '=', $partnerId)->where('status', '=', 3)->orderBy('id')->first();
+		$ownerRequest = $requests->where('user_id', '=', $userId)->where('status', '=', 3)->orderBy('id')->first();
+
+		$partnerRequest->status = 0; // The journey is canceled
+		$ownerRequest->status = 0; // The journey is canceled
+
+		$activeJourney->status = 0; // The journey is canceled
 		$activeJourney->delete_at = date('Y-m-d H:i:s', time());
 		$activeJourney->user_delete_id = $userId;
 		$activeJourney->rating_value = 0;
@@ -356,6 +384,8 @@ class JourneyController extends Controller
 
 		$notifyInfo = $deviceInfo->pushNotification($partnerId, $data);
 		$activeJourney->save();
+		$partnerRequest->save();
+		$ownerRequest->save();
 
 		$result = array(
 			"delete_at" => date('Y-m-d H:i:s', time()),
