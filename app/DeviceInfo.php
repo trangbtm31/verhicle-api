@@ -53,7 +53,7 @@ class DeviceInfo extends Model
 
         return [
             "request-data" => $dataBuild->toArray(),
-            "success" => $isSentSuccess
+            "is_success" => $isSentSuccess
         ];
     }
 
