@@ -132,6 +132,7 @@ class JourneyController extends Controller
 	{
 		$deviceInfo = new DeviceInfo();
 		$journey = new Journeys();
+		$requests = new Requests();
 		$user = $this->user;
 		$userId = $user->id;
 		$receiverId = $request->get('receiver_id');
@@ -161,8 +162,11 @@ class JourneyController extends Controller
 
 		$result = $deviceInfo->pushNotification($receiverId, $data);
 
-		$requestInfo = $journey->find($userRequest->id);
-		$receiverRequestInfo = $journey->where('user_id', '=', $receiverId)->where('status', '=', 1)->orderBy(
+		$requestInfo = $requests->where('user_id', '=', $userId)->where('status', '=', 1)->orderBy(
+			'id',
+			'desc'
+		)->first();
+		$receiverRequestInfo = $requests->where('user_id', '=', $receiverId)->where('status', '=', 1)->orderBy(
 			'id',
 			'desc'
 		)->first();
