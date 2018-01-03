@@ -170,12 +170,12 @@ class JourneyController extends Controller
 			'id',
 			'desc'
 		)->first();
-		if ($result['success']) {
-			$requestInfo->status = 2; // This request owner has sent request to another user. ( status change to pending )
-			$requestInfo->save();
-			$receiverRequestInfo->status = 2; // This request owner has received request to another user. ( status change to pending )
-			$receiverRequestInfo->save();
-		}
+
+		$requestInfo->status = 2; // This request owner has sent request to another user. ( status change to pending )
+		$requestInfo->save();
+		$receiverRequestInfo->status = 2; // This request owner has received request to another user. ( status change to pending )
+		$receiverRequestInfo->save();
+
 
 		return $this->success(
 			200,
