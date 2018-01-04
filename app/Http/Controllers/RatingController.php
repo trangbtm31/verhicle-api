@@ -72,6 +72,7 @@ class RatingController extends Controller
         $userInfo->avg_hiker_vote = $argHikerRating;
         $userInfo->avg_driver_vote = $argDriverRating;
         $journeyInfo->save();
+        $userInfo->save();
 
         $result = [
             'total_rating' => $argJourneyRating,
