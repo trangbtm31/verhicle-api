@@ -10,6 +10,7 @@ use App\User;
 use App\Requests;
 
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class UserController extends Controller
 {
@@ -108,7 +109,7 @@ class UserController extends Controller
 					]
 				);
 			}
-			$api_token = str_random(30);
+			$api_token = str_random(30).Carbon::now()->timestamp;
 			$isActiveUser->api_token = $api_token;
 			$isActiveUser->save();
 
@@ -149,7 +150,7 @@ class UserController extends Controller
 		}
 		$cancelRequest = Requests::cancelRequest($user->id);
 
-		$user->api_token = '';
+		$user->api_token = null;
 
 		$user->save();
 
