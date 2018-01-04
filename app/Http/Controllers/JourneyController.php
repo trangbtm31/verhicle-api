@@ -214,17 +214,20 @@ class JourneyController extends Controller
 		if ($request->get('vehicle_type') == 0) {
 			$journeyInfo = $journey
 				->where('hiker_id', '=', $userId)
-				->where('status', '=', '1')->first();
+				->where('status', '=', '1')
+				->orderBy('id', 'desc')
+				->first();
 			$partnerRequest = $requests->where('user_id', '=', $journeyInfo->driver_id)->where('status', '=', 2)->orderBy('id')->first();
 		} else {
 			$journeyInfo = $journey
 				->where('driver_id', '=', $userId)
-				->where('status', '=', '1')->first();
+				->where('status', '=', '1')
+				->orderBy('id', 'desc')
+				->first();
 			$partnerRequest = $requests->where('user_id', '=', $journeyInfo->hiker_id)->where('status', '=', 2)->orderBy('id')->first();
 		}
 
 		$ownerRequest = $requests->where('user_id', '=', $userId)->where('status', '=', 2)->orderBy('id')->first();
-
 		if (!$journeyInfo) {
 			return $this->error(
 				1,
