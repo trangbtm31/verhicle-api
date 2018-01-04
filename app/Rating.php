@@ -29,18 +29,17 @@ class Rating extends Model
      * @param $journeyId
      * @return float
      */
-    public function getJourneyRating($journeyId) {
-        $ratingValues = $this->where('journey_id', '=', $journeyId)->get();
-        $totalRating = $ratingValues->count();
+    public function getAvgRating($ratingList) {
+        $totalRating = count($ratingList);
         $totalRatingValue = 0;
         //$lastRating = $this->orderBy('id', 'desc')->first();
 
-        foreach ($ratingValues as $ratingValue) {
+        foreach ($ratingList as $ratingValue) {
             $totalRatingValue += $ratingValue->rating_value;
         }
-        $argRating = round($totalRatingValue / $totalRating, 1);
+        $avgRating = round($totalRatingValue / $totalRating, 1);
 
-        return $argRating;
+        return $avgRating;
     }
 
 }
