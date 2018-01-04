@@ -686,7 +686,7 @@ class JourneyController extends Controller
 				// Get Distance from own end location to the partner's end location
 				$destinationDistance = $this->getDistance($lat2, $lng2, $activeLat2, $activeLng2, 'M');
 				// Check if the trip is the same
-				if ($startDistance <= 500 && $destinationDistance <= 500 && $isSameTime < 30) {
+				if ($startDistance <= 1000 && $destinationDistance <= 1000 && $isSameTime < 30) {
 					array_push($result, $activeUser);
 				}
 			}
