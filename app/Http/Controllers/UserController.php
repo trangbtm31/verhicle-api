@@ -218,13 +218,14 @@ class UserController extends Controller
 	public function getUserHistory(Request $request)
 	{
 		$user = $request->user();
+		$userId = $request->get('user_id') ? $request->get('user_id') : $user->id;
 
 		if($request->get('user_type') == 'driver') {
-			$successHistory = $this->getUserTrip($user->id, 3,true);
-			$failHistory = $this->getUserTrip($user->id, 0,true);
+			$successHistory = $this->getUserTrip($userId, 3,true);
+			$failHistory = $this->getUserTrip($userId, 0,true);
 		} elseif ($request->get('user_type') == 'hiker') {
-			$successHistory = $this->getUserTrip($user->id, 3,false);
-			$failHistory = $this->getUserTrip($user->id, 0,false);
+			$successHistory = $this->getUserTrip($userId, 3,false);
+			$failHistory = $this->getUserTrip($userId, 0,false);
 		} else {
 			return $this->error(1, 'Your type request is wrong', 200);
 		}
