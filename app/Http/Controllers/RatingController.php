@@ -42,7 +42,6 @@ class RatingController extends Controller
         $journeyId = $request->get('journey_id');
 
         $journeyInfo = $journey->find($journeyId);
-        $userInfo = $user->find($userId);
         if($userId != $journeyInfo->hiker_id && $userId != $journeyInfo->driver_id) {
             return $this->error(
                 1,
@@ -61,18 +60,10 @@ class RatingController extends Controller
         );
 
         $journeyList = $rating->where('journey_id', '=', $journeyId)->get();
-        $userHikerRatingList = $journey->where('hiker_id', '=', $userId)->get();
-        $userDriverRatingList = $journey->where('driver_id', '=', $userId)->get();
-
         $argJourneyRating = $rating->getAvgRating($journeyList);
-        $argHikerRating = $rating->getAvgRating($userHikerRatingList);
-        $argDriverRating = $rating->getAvgRating($userDriverRatingList);
 
         $journeyInfo->rating_value = $argJourneyRating;
-        $userInfo->avg_hiker_vote = $argHikerRating;
-        $userInfo->avg_driver_vote = $argDriverRating;
         $journeyInfo->save();
-        $userInfo->save();
 
         $result = [
             'total_rating' => $argJourneyRating,

@@ -37,7 +37,7 @@ class Rating extends Model
         foreach ($ratingList as $ratingValue) {
             $totalRatingValue += $ratingValue->rating_value;
         }
-        $avgRating = round($totalRatingValue / $totalRating, 1);
+        $avgRating = round($totalRatingValue / $totalRating == 0? 1: $totalRating, 1);
 
         return $avgRating;
     }
