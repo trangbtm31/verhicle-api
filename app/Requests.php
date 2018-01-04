@@ -28,7 +28,7 @@ class Requests extends Model
 
 	static function cancelRequest ($userId) {
         $request = new Requests();
-        $requestInfo = $request->where('user_id', '=', $userId)->where('status', '=', 1)->first();
+        $requestInfo = $request->where('user_id', '=', $userId)->where('status', '=', 1)->orWhere('status', '=', 2)->first();
         if($requestInfo) {
             $requestInfo->status = 0;
             $requestInfo->delete_at = date('Y-m-d H:i:s', time());
