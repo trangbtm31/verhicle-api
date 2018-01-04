@@ -163,18 +163,31 @@ class UserController extends Controller
 	 */
 	public function show(Request $request)
 	{
+		$favorite = new Favorites();
 		$userId = $request->get('user_id');
+		$result = array();
 		if (isset($userId)) {
 			$user = new User();
 			$user = $user->find($request->get('user_id'));
+			$isFavorite = $favorite->where('user_id', '=', $request->user()->id)->where(
+				'favorited_user_id',
+				'=',
+				$user->id
+			)->first();
+			$result = [
+				"is_favorite" => !empty($isFavorite) ? 1 : 0,
+				"user_info" => $user
+			];
 		} else {
 			$user = $request->user();
+			$result = [
+				"user_info" => $user
+			];
 		}
 		if (!$user) {
 			return $this->error(1, "This user with doesn't exist", 200);
 		}
-
-		return $this->success(200, 'user_info', $user);
+		return $this->success(200, 'information', $result);
 	}
 
 	/**
